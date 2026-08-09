@@ -1,0 +1,35 @@
+# R2 calibration run — hot-key seat-decrement contention
+# date: 2026-08-09
+# host: macOS (Darwin 25.5.0), Apple Silicon, Python 3.10.11
+# harness: tools/calibrate_lock_contention.py (no flags: 3 reps, 2.0s per level)
+# engine: SQLite 3, BEGIN IMMEDIATE / UPDATE / COMMIT, busy_timeout 5000ms
+# workers: separate OS processes (not threads — the GIL would fake a plateau)
+# NOTE: SQLite serialises ALL writes; Postgres locks per ROW. Fair analogue for
+#       the hot-key case only; OVERSTATES contention for the sharded case (R4
+#       rung 3). The Postgres SELECT FOR UPDATE run is still owed.
+concurrency,rep,throughput_ops_s,p50_ms,p95_ms,p99_ms,errors
+1,0,2799.0,0.210,0.329,3.241,0
+1,1,2287.5,0.230,0.371,6.363,0
+1,2,2226.5,0.238,1.003,5.926,0
+2,0,2679.0,0.246,0.784,3.592,0
+2,1,3156.5,0.214,0.314,0.493,0
+2,2,3403.5,0.222,0.312,2.888,0
+4,0,3216.0,0.240,0.383,2.724,0
+4,1,3302.5,0.227,0.361,2.653,0
+4,2,2508.0,0.212,0.307,2.719,0
+8,0,4033.5,0.227,0.308,0.401,0
+8,1,3552.0,0.232,0.330,1.827,0
+8,2,2447.0,0.243,1.942,3.612,0
+16,0,2272.0,0.215,0.318,6.004,0
+16,1,3453.0,0.218,0.321,0.603,0
+16,2,2721.0,0.223,0.432,4.876,0
+32,0,3376.5,0.249,0.391,2.316,0
+32,1,3532.0,0.241,0.333,1.756,0
+32,2,2964.0,0.219,0.340,4.193,0
+64,0,3004.5,0.210,0.313,2048.949,0
+64,1,2850.5,0.222,0.327,2067.364,0
+64,2,2235.5,0.226,0.324,2093.434,0
+# SUMMARY (medians): peak 3552.0 ops/s at concurrency 8; 2850.5 ops/s at 64
+# retention past knee: 80.3% of peak -> THROUGHPUT PLATEAUS, does not collapse
+# p99 at concurrency 64: ~2050ms across all 3 reps, vs 1.8ms at the knee
+# -> the TAIL collapses (~1000x) while median and throughput stay flat

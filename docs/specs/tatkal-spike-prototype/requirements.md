@@ -168,19 +168,97 @@ Metrics, at p50/p95/p99, **split by outcome** (winners vs rejected):
   population share.
 - Settling time — seconds to return to normal latency after the spike.
 
-**Succeeded** (illustrative, at ~50× capacity for 60s): goodput within
-10% of the uncongested maximum; p99 time-to-answer for *rejected* users
-< 5s; 100% of inventory sold; zero connection-level errors; retry
-amplification < 1.5×.
+#### Calibrated from measurement — 2026-08-09
 
-**Did not help** — and this is an acceptable, reportable outcome: the
-candidate arm falls within the 95% confidence interval of the strong
-baseline across ≥ 20 seeded replications. A claim of improvement requires
-≥ 10% gain on a primary metric with non-overlapping CIs and no > 5%
-regression elsewhere.
+These thresholds were **calibrated against a real contention measurement**,
+not chosen by feel. `tools/calibrate_lock_contention.py` ran 64 concurrent
+OS processes contending for one row (the hot key) through
+`BEGIN IMMEDIATE / UPDATE / COMMIT`; 7 concurrency levels × 3 reps.
+Raw data: `calibration/2026-08-09-sqlite-hotkey.csv`.
+
+| Concurrency | Throughput (median) | p50 | p95 | **p99** |
+|---:|---:|---:|---:|---:|
+| 1 | 2287 ops/s | 0.23 ms | 0.37 ms | 5.9 ms |
+| 8 | **3552 ops/s** (peak) | 0.23 ms | 0.33 ms | 1.8 ms |
+| 32 | 3376 ops/s | 0.24 ms | 0.39 ms | 2.3 ms |
+| 64 | 2850 ops/s | 0.22 ms | 0.33 ms | **2049 ms** |
+
+**The measurement overturned this spec's original primary metric.**
+Throughput does **not** collapse past the knee — it retains ~80% of peak
+at 8× the knee concurrency, and p50/p95 stay flat at ~0.2/0.3 ms
+throughout. The original threshold ("goodput within 10% of the
+uncongested maximum") would have been *nearly satisfied by doing
+nothing*, making it useless for distinguishing any mechanism from the
+naive baseline.
+
+What *does* collapse is the **tail**: p99 goes from ~2 ms at the knee to
+**~2050 ms at 64× — roughly a 1000× degradation** — reproducibly, across
+all three reps (2049/2067/2093 ms), while median latency does not move.
+The distribution is bimodal: most requests are served immediately, a
+minority wait behind the lock for seconds.
+
+**Therefore: tail latency is the primary metric, and goodput is demoted
+to a guardrail.** This is the calibration's main finding and it changes
+what the experiment is measuring.
+
+Also learned, and folded into the requirements above:
+
+- **Zero errors at every level.** With a busy-timeout set, overload
+  manifests entirely as *latency*, never as failures. An error-rate
+  threshold would have measured nothing. R3's "clean rejection vs hard
+  error" split still matters, but only once an admission mechanism
+  introduces deliberate rejection.
+- **Run-to-run variance is large** (throughput ranged 2226–4033 ops/s at
+  fixed concurrency). R6's ≥ 20 replications requirement is vindicated;
+  anything less cannot separate a 10% effect from noise.
+- **The knee is shallow and wide** (peak at concurrency ~8, no sharp
+  cliff), so "the knee" is a region, not a point. Report the curve.
+
+#### Thresholds
+
+Stated as formulas over measured quantities, so they recalibrate when R2
+is rerun on different hardware or a different engine. Current constants
+from the run above: `C_peak` = 3552 ops/s, `N_knee` = 8,
+`p99_knee` = 1.8 ms.
+
+**Succeeded** — the candidate arm, versus the *strong* baseline (R5), at
+≥ 8× `N_knee` offered concurrency:
+
+- **p99 time-to-definitive-answer ≤ 50 × `p99_knee`** (≈ 90 ms with
+  today's constants) — versus ~2050 ms unmitigated. This is the headline.
+- p99 answer for **rejected** users ≤ p99 for winners. Losers must learn
+  they lost at least as fast as winners learn they won.
+- Goodput ≥ 0.8 × `C_peak` — a **guardrail**, not a success signal. The
+  naive baseline already meets it; an arm that *fails* it has traded away
+  throughput for latency and must justify that.
+- 100% of inventory sold; zero double-sold or lost seats.
+- Retry amplification < 1.5×.
+
+**Did not help** — an acceptable, reportable outcome: p99 improvement
+falls within the 95% CI of the strong baseline across ≥ 20 seeded
+replications. A claim of improvement requires ≥ 10% gain on p99 with
+non-overlapping CIs and no > 5% regression on goodput or fairness.
 
 A win in one corner of the parameter sweep is **not** a win. The
 sensitivity table ships with the result.
+
+#### What these numbers are not
+
+Honest limits, so the constants are not over-trusted:
+
+- **SQLite, not Postgres.** SQLite's writer lock serialises the whole
+  database; Postgres locks per row. For the **hot-key** case (one train,
+  everyone contending) that is a fair analogue. For the **sharded** case
+  (R4 rung 3) it *overstates* contention, since different trains would
+  not block each other under Postgres. R2's Postgres run is still owed
+  and these constants are provisional until it lands.
+- **Service time here is ~0.2 ms** — a bare row update with no
+  application logic, network hop, or serialisation cost. Real per-request
+  service time will be orders of magnitude larger, which moves `N_knee`
+  down and may change the curve's shape entirely.
+- **One machine, one run, no cross-hardware check.** The absolute numbers
+  are laptop-specific; the *shape* (flat median, exploding tail) is the
+  transferable finding.
 
 ### R7 — where ML is in scope, and where it is not
 
