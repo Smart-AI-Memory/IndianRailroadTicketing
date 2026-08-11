@@ -122,14 +122,92 @@ These measurements parameterise the simulator.
 
 ### Calibration status (2026-08-11)
 
-R2 is **not yet satisfied.** One calibration run exists and is retained for
-provenance, but it does not meet this requirement and its headline result does
-not survive review.
+Two runs exist. The 2026-08-09 SQLite run is retained for provenance; its
+headline result was withdrawn as a harness artifact (below). The 2026-08-11
+Postgres/HTTP run is the **current calibration record** and satisfies R2's
+measurement requirements; the simulator-fit half of R2 remains open because
+the simulator does not exist yet.
+
+#### Current record — 2026-08-11: HTTP + Postgres `SELECT FOR UPDATE`
 
 Artifacts:
 
+- endpoint — `tools/r2_server.py` (HTTP/1.1 keep-alive; genuine
+  `SELECT FOR UPDATE` → decrement → commit; sold-out returned as a clean
+  rejection, preserving R6's rejection/error split at the wire level)
+- harness — `tools/calibrate_r2.py` (two regimes, measured separately)
+- raw data — `calibration/2026-08-11-postgres-http.csv`
+- engine — PostgreSQL 17.10 (Homebrew, throwaway local instance,
+  `max_connections=450`), psycopg 3, Python 3.10 client/server
+
+Spec conformance: HTTP endpoint ✓; `SELECT FOR UPDATE` ✓; concurrency
+1…256 ✓; 20 replications per level ✓; **zero hard errors across all 183
+runs**. The two regimes: *steady state* excludes each worker's first
+post-T0 request (this fits the service model and sets the constants);
+*T0 convoy* is exactly those first requests, fired at a shared instant with
+connection setup paid beforehand (this calibrates R3.5).
+
+Measured curve (medians across 20 reps; hot key, one row):
+
+| C | Throughput | p50 | p95 | p99 | convoy p99 |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 3437 ops/s | 0.26 ms | 0.46 ms | 0.54 ms | 1.7 ms |
+| 2 | **4865 ops/s** (peak) | 0.39 ms | 0.59 ms | 0.68 ms | 2.5 ms |
+| 8 | 4187 ops/s | 1.22 ms | 5.45 ms | 7.95 ms | 6.7 ms |
+| 16 | 3970 ops/s | 1.34 ms | 18.3 ms | 34.3 ms | 17.8 ms |
+| 64 | 2504 ops/s | 17.2 ms | 77.0 ms | 118 ms | 123 ms |
+| 256 | 1537 ops/s | 113 ms | 454 ms | 689 ms | 765 ms |
+
+Findings:
+
+1. **Throughput genuinely collapses** — 31.6% of peak at C=256, declining
+   monotonically past the knee. The SQLite plateau does not reproduce with
+   a real endpoint: admission control has something real to save, on both
+   goodput (3.2× lost) and tail (p99 grows ~1000×, 0.68 → 689 ms).
+2. **The tail grows smoothly with queue depth** — no cliff, no artifact.
+   Ranges across 20 reps are tight (p99 at C=256: 614–776 ms), so the
+   ≥ 20-replication requirement is sufficient to resolve 10% effects here.
+3. **No regime split under fair queueing.** Convoy p99 ≈ steady p99 at
+   every level (123 vs 118 ms at C=64). SQLite's 1300× convoy/steady split
+   was produced by its unfair busy-wait backoff, not by the load. **Queue
+   discipline, not capacity, decides whether a synchronized stampede
+   produces catastrophic tails** — which is precisely the mechanism the
+   virtual waiting room (R4 rung 4) institutionalises, and the cleanest
+   empirical motivation this spec has for it.
+4. **Sharding measured directly** — the same C=64 offered load spread over
+   8 rows instead of 1: p99 halves (118 → 59 ms) at equal throughput. This
+   retires the "SQLite overstates sharded contention" caveat with data,
+   and shows that at C=64 roughly half the queueing is the row lock and
+   the rest is app-server capacity.
+
+Constants measured (fixing them is R6 step 2 and remains a chair decision):
+
+- `N_knee` = 2 — but the knee is a region: C=2–8 all sit within 15% of peak.
+- `C_peak` = 4865 ops/s (median of 20 reps; range 4674–5004).
+- `p99_knee` = 0.684 ms (range 0.656–0.975).
+
+Two formula notes for that decision:
+
+- With `N_knee` = 2, the "≥ 8 × `N_knee`" operating point is C=16, where
+  the unmitigated system still delivers p99 ≈ 34 ms — a weak stress test.
+  The deepest measured overload is 128 × `N_knee`.
+- 50 × `p99_knee` ≈ 34 ms — almost exactly the unmitigated p99 at C=16.
+  Both multipliers predate any measurement and MUST be re-derived, not
+  carried over (see also: the 50× silently bridges user-level TTDA to
+  single-transaction service p99).
+
+Limitations of this run: the single-process Python HTTP server is part of
+the measured system and contributes materially past ~C=32 (the sharded
+control isolates this) — realistic in kind, laptop-specific in degree; one
+machine, no cross-hardware check; uncontended service time is ~0.3 ms, still
+far below a production request with auth, serialisation, and network.
+
+#### Withdrawn — 2026-08-09: SQLite hot-key run
+
+Artifacts, retained for provenance:
+
 - harness — `tools/calibrate_lock_contention.py`
-- raw data — `docs/specs/tatkal-spike-prototype/calibration/2026-08-09-sqlite-hotkey.csv`
+- raw data — `calibration/2026-08-09-sqlite-hotkey.csv`
 
 #### Gaps against R2 as specified
 
@@ -166,9 +244,12 @@ with a flat tail; the harness's own summary classifies this shape as `PLATEAU`.
 That is the case in which admission control has least to recover, so R2's rerun
 determines whether the ablation ladder has a measurable subject at all.
 
-**Consequently the current choice of primary metric is unjustified.** This
-document retains p99 time-to-definitive-answer as primary (R6); that choice
-inherits from the withdrawn result and MUST be re-decided against R2's rerun.
+**Consequently the choice of primary metric could not rest on this run.**
+The 2026-08-11 rerun (above) now supplies the evidence: with a real endpoint
+both goodput and tail degrade measurably (3.2× and ~1000× respectively), so
+either could anchor the evaluation. The decision between them — and the
+re-derivation of the threshold multipliers — remains open for the chair per
+R6's ordering.
 
 #### Standing limitations of the SQLite approach
 
@@ -379,9 +460,10 @@ Where applicable, metrics MUST be split between successful and rejected users.
 
 The primary metric is p99 time-to-definitive-answer.
 
-> **Provisional.** This choice inherits from a calibration result since
-> withdrawn as a harness artifact — see R2, *Calibration status*. It MUST be
-> re-decided once R2 is rerun.
+> **Provisional.** Originally justified by a withdrawn result; the 2026-08-11
+> rerun (R2, *Calibration status*) shows both tail (~1000×) and goodput
+> (3.2×) degrade under overload, so the data supports either choice. The
+> chair's decision at R6 step 2 confirms or changes this.
 
 ### Guardrail — goodput
 
@@ -459,9 +541,12 @@ engine.
 Each MUST be reported as a median across at least 20 replications, together with
 its observed range.
 
-**Status: unset.** The 2026-08-09 run does not supply usable values — see R2,
-*Calibration status*. No values are currently carried in this document. R2 MUST
-be completed and these constants fixed before any R4 arm is run.
+**Status: measured, not yet fixed.** The 2026-08-11 run supplies candidate
+values — `N_knee` = 2 (knee region 2–8), `C_peak` = 4865 ops/s,
+`p99_knee` = 0.684 ms; see R2, *Calibration status* — but fixing them here is
+step 2 of the ordering above and awaits the chair, together with a
+re-derivation of the 8× and 50× multipliers, which predate any measurement.
+No constants are fixed until that decision is recorded.
 
 ### Success criteria
 
@@ -658,12 +743,17 @@ Before implementation is considered complete for the requirements phase:
 - No experiment requires contacting IRCTC.
 - Open assumptions are identified rather than silently treated as facts.
 
-Two items are **not** yet satisfied and block the requirements phase:
+Two items remain open and block the requirements phase:
 
-- R2 is incomplete (see *Calibration status*), so `N_knee`, `C_peak`, and
-  `p99_knee` are unset.
-- The primary metric is inherited from a withdrawn result and must be
-  re-decided against R2's rerun.
+- `N_knee`, `C_peak`, and `p99_knee` are measured (2026-08-11 run) but not
+  yet fixed — R6 step 2 awaits the chair, including re-derivation of the
+  8× operating-point and 50× threshold multipliers.
+- The primary-metric choice awaits the same decision; the rerun shows both
+  candidate metrics degrade measurably, so evidence no longer forces either.
+
+The simulator-fit half of R2's acceptance (fit the server model, plot the
+fit, report multiple knee shapes) is blocked on the simulator existing and
+belongs to the build phase.
 
 ---
 

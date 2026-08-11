@@ -1,1 +1,2 @@
 attune-ai==11.5.0
+psycopg[binary]==3.3.4  # R2 calibration harness (tools/r2_server.py, tools/calibrate_r2.py)
