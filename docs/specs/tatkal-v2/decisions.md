@@ -308,6 +308,39 @@ CI thereafter.
 
 **Binds:** V0.2's anchor test; V3.4's acceptance.
 
+## D17 — GATE B passed: bars, guards, multiplicity registered
+
+**Date:** 2026-08-12 · **Decided by:** chair (Gate B pass GB1–GB4,
+informed by V4's floor document and comparison inventory) · **Status:**
+final — evaluated runs may begin
+
+1. **Bars (GB1, floor-relative 3×, per clock/variant/grid point):**
+   M1/M2 post-event resolution p99 ≤ 3× the burst floor at each c_push
+   grid point; loser absolute TTDA ≤ deliberate wait + 3× burst floor;
+   M3 whole-run ≤ H + 3× last-tranche drain floor. **Report-only** (a
+   finding, never pass/fail): M3 seats-sold, M2 ghost_sales.
+2. **Fairness guards (GB2/GB2b, D5 executed):** at p = 0 every bot
+   strategy's controller-level draw-share advantage ≤ 1.05 in M1/M2
+   (P1-consistent). At p > 0 the identity-split controller advantage is
+   guarded at **≤ m (= 5)** — the no-super-linear-amplification guard —
+   with the full advantage curve reported. M3 whole-run F-ratio and R3′
+   F-ratio: no regression > 5% vs their rung-2/rung-4 comparators.
+3. **Multiplicity (GB3):** Holm–Bonferroni within each comparison
+   family (M1, M2, M3, R3′) over the 22 inventoried primary
+   comparisons; the inventory in floors.md is the closed list.
+4. **M3 allotment (GB4):** D14.1 amended — per-pool tranches
+   [7, 6, 6, 6] (global [56, 48, 48, 48], remainder front-loaded); the
+   equal-50 wording was infeasible at 25 seats/pool. Deviation was
+   flagged at implementation and is resolved by this entry.
+5. **Improvement-claim rule carries v1:** ≥ 10% on the primary metric,
+   paired 95% CI excluding zero, ≤ 5% regression in goodput/fairness.
+6. Smoke findings recorded as expected behaviour: M2 ghost_sales
+   (patience/confirmation race; two-phase inventory deferred, D2) and
+   M3 undersell (paced drain vs departing rejected demand) are
+   report-only mechanism findings.
+
+**Binds:** every V5/V6 evaluated run; V7's grading.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*
