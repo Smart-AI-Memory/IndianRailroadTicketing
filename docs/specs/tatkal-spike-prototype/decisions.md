@@ -251,9 +251,49 @@ throughput and on tail *direction*, conservative on tail *magnitude*
 valid — every arm runs on the same conservative model — and the knee
 variants (plateau/cliff) bracket the shape uncertainty per R2.
 
+## D14 — Gate A rulings; C=256 operationalization amended (chair, 2026-08-11)
+
+**Date:** 2026-08-11 · **Decided by:** chair, on the rung-0 fitted-profile
+20-seed Gate A profile · **Status:** ratified — unblocks R4 arm runs
+
+**C=256 operationalization (amending D10/S5's realization).** Measurement
+showed "peak in-flight = 256 ± 5%" is unsatisfiable: congestion feedback
+makes peak in-flight bistable (sub-critical bursts stay ≤ ~180; anything
+past the knife-edge blows through to the 451 connection ceiling; at the
+edge, seeds swing 30↔398). Ruling: the operating point is realized as the
+**supercritical spike** — operating workload 2650 users (2500 t0-humans,
+150 bots, 30 pre-fire), binding check: **in-flight ≥ 256 sustained for
+≥ 1 s** at the calibration-analogue conn ceiling (450). Measured: 1.3–2.1 s
+sustained across seeds. The ratified *evaluation point* (deepest calibrated
+overload) is unchanged; only its workload realization is amended.
+
+**Gate A dispositions** (profile: F ≈ 5.1, wasted-work 0.0 with 47%
+hard-error rate, settling uncomputable 0/20):
+
+1. **Fairness — thresholded.** Scalar `F = bot win-share ÷ bot population
+   share` (rung-0 naive measures F ≈ 5.1). Success direction: reduce F
+   toward 1. Regression bound: F MUST NOT rise > 5% *relative* vs the
+   strong baseline — this makes R6's "no > 5% regression in fairness"
+   computable.
+2. **Wasted-work ratio — report-only** in v1. In the fitted regime
+   overload manifests as connection resets, not stale work; the metric
+   bites under knee variants and slow-service sensitivity runs, where it
+   is reported.
+3. **Settling time — report-only**, plus a workload amendment: a small
+   post-T0 `background` cohort (trickle after the spike) so recovery is
+   measurable at all; on the spike-only workload the run ends with the
+   spike and no 5 s quiet interval can exist.
+
+**Binds:** requirements R6 (Gate A items), workload.py OPERATING_WORKLOAD,
+tasks.md Gate A. R4 arm runs are now unblocked.
+
 ## Open questions (no decision yet)
 
-- **Fairness threshold at Gate A** — the metric definition (seat share by
-  first-arrival cohort; bot win share vs population share) is fixed; the
-  pass/fail bar is not. Per D10, Gate A must also define the scalar
-  statistic and how "5% regression" is computed over the two quantities.
+- **Winners' p99 TTDA vs the 34.2 ms bar (found at P6, 2026-08-11).**
+  The pre-fire cohort's TTDA clock starts at its first pre-T0 poll (~20 s
+  before T0, by ratified design), so winners' p99 is ~18.8 s for EVERY
+  arm — the D11 success bar for the winners population is structurally
+  unmeetable. Needs a chair ruling before P9 evaluation: e.g. (a) TTDA
+  measured from max(first request, T0); (b) pre-fire winners reported as
+  their own population; or (c) the bar binds post-T0 TTDA only. The
+  rejected-population bar is unaffected (rungs 1-2 meet it with room).

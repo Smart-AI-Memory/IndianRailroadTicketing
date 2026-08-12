@@ -70,10 +70,14 @@ def test_uniform_demand_deletes_the_hot_key():
 def test_bots_win_disproportionately_under_scarcity():
     # capacity 100: the pre-fire cohort's T0 re-fires legitimately take the
     # first ~30 seats (pre-firing converts to seats); with 40 the contest
-    # would be over before the bot window's tighter timing can show at all
+    # would be over before the bot window's tighter timing can show at all.
+    # Pinned to the original 260-user shape: the direction claim is
+    # scale-independent, and the D14 supercritical OPERATING would need
+    # retuned capacity for no extra signal.
     w = world(
         FidelityConfig(),
         factory=lambda c, q, wc: StubService(c, q, wc.t0, delay=0.05, capacity=100),
+        wcfg=WorkloadConfig(n_pre_fire=30, n_t0_humans=215, n_bots=15, n_background=0),
     )
     wins = winners_by_cohort(w.engine.log, w.intents)
     n = len(w.intents)

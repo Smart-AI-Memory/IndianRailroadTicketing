@@ -29,6 +29,7 @@ import itertools
 import json
 import math
 import statistics
+import dataclasses
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -289,6 +290,22 @@ def refine(
                 best, best_loss = p, loss
                 log(f"  refine {key} -> {p[key]:.4g} loss={loss:.4f}")
     return best, best_loss
+
+
+# ------------------------------------------------------- experiment profiles
+FIT_JSON = CSV.parent / "fit-2026-08-11.json"
+
+
+def fitted_server_config(seats_per_pool: int = 25, path: Path = FIT_JSON) -> ServerConfig:
+    """The committed fitted profile, re-seated for experiment scarcity.
+
+    Everything except inventory comes from the calibration fit; seats are
+    the experiment's scarcity knob (default 25/pool: ~13x overall, ~40x
+    hot-pool oversubscription at the operating workload).
+    """
+    return dataclasses.replace(
+        replica_config(load_fit(path)["params"]), seats_per_pool=seats_per_pool
+    )
 
 
 # ------------------------------------------------------------- knee variants

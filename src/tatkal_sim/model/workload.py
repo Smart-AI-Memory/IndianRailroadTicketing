@@ -46,16 +46,25 @@ class WorkloadConfig:
     pre_fire_window: float = 20.0  # pre-fire arrivals: uniform [T0 - w, T0)
     pre_fire_poll: float = 0.75  # pre-T0 poll interval (density source)
     spread_window: float = 60.0  # t0_concentration OFF: uniform over this
+    # background cohort (D14): post-spike trickle so settling time is
+    # measurable at all — without it the run ends with the spike and no
+    # quiet interval can exist
+    n_background: int = 60
+    background_start: float = 2.0  # offsets after T0
+    background_end: float = 32.0
     n_trains: int = 8
     zipf_s: float = 1.1
     classes: tuple[str, ...] = ("AC",)
     date: str = "D0"
 
 
-#: Provisional operating workload targeting the ratified C=256 operating
-#: point (D10/S5). Calibrated against the P2 stub service; RE-VERIFIED on
-#: the real rung-0 server at P6.1, which is the binding check.
-OPERATING_WORKLOAD = WorkloadConfig()
+#: Operating workload — the SUPERCRITICAL realization of the ratified
+#: C=256 operating point (chair amendment, decisions.md D14): the
+#: "peak in-flight = 256 +/- 5%" target proved bistable-unsatisfiable, so
+#: the binding check is in-flight >= 256 SUSTAINED >= 1 s at the
+#: calibration-analogue conn ceiling (450). Verified on the real rung-0
+#: fitted profile in tests/test_rungs.py.
+OPERATING_WORKLOAD = WorkloadConfig(n_t0_humans=2500, n_bots=150)
 
 
 def _zipf_weights(n: int, s: float) -> list[float]:
@@ -103,6 +112,11 @@ def generate_intents(
     for _ in range(n_bots):
         t = cfg.t0 + arrivals.uniform(0.0, cfg.bot_window)
         intents.append(Intent(uid, draw_pool(), "bots", t))
+        uid += 1
+
+    for _ in range(cfg.n_background):
+        t = cfg.t0 + arrivals.uniform(cfg.background_start, cfg.background_end)
+        intents.append(Intent(uid, draw_pool(), "background", t))
         uid += 1
 
     intents.sort(key=lambda i: (i.t_arrival, i.user_id))

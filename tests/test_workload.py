@@ -2,13 +2,13 @@
 
 from tatkal_sim.config import FidelityConfig
 from tatkal_sim.core import RngStreams
-from tatkal_sim.model.users import peak_in_flight, requests_in_window
+from tatkal_sim.model.users import requests_in_window
 from tatkal_sim.model.workload import (
     OPERATING_WORKLOAD,
     generate_intents,
     trace_digest,
 )
-from tests.conftest import StubService, run_world
+from tests.conftest import run_world
 
 FID = FidelityConfig()
 
@@ -50,20 +50,22 @@ def test_zipf_concentrates_demand_on_hot_train():
     assert hot > hot_uni + 0.10  # R3.8 direction, asserted again in P2.3
 
 
-def test_operating_workload_hits_c256(subtests=None):
-    """D10/S5 provisional check: rung-0-shaped peak in-flight = 256 +/- 5%.
+def test_background_cohort_arrives_after_the_spike():
+    """D14: the background trickle exists so settling time is measurable;
+    it arrives strictly inside [T0+start, T0+end]."""
+    cfg = OPERATING_WORKLOAD
+    bg = [i for i in gen() if i.cohort == "background"]
+    assert len(bg) == cfg.n_background
+    assert all(
+        cfg.t0 + cfg.background_start <= i.t_arrival <= cfg.t0 + cfg.background_end for i in bg
+    )
 
-    Stub service (1.5 s fixed delay) stands in for the real server; the
-    BINDING verification re-runs on the real rung-0 arm at P6.1.
-    """
-    for seed in (1, 2):
-        w = run_world(
-            seed=seed,
-            wcfg=OPERATING_WORKLOAD,
-            service_factory=lambda c, q, wc: StubService(c, q, wc.t0, delay=1.5),
-        )
-        peak = peak_in_flight(w.engine.log)
-        assert 256 * 0.95 <= peak <= 256 * 1.05, f"seed {seed}: peak {peak}"
+
+# NOTE: the stub-based "peak in-flight = 256 +/- 5%" check that lived here
+# was SUPERSEDED by chair amendment D14 (the target is bistable-
+# unsatisfiable on the fitted profile). The binding operating-point check
+# — in-flight >= 256 sustained >= 1 s on real rung 0 — is
+# tests/test_rungs.py::test_binding_operating_point_supercritical.
 
 
 def test_pre_t0_density_supports_settling_baseline():
