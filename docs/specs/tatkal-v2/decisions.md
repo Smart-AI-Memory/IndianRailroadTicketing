@@ -243,6 +243,42 @@ adjusted after runs — misses are reported:
 evaluated run's workload; M1's cell structure (r_reg × its other
 axes); M2's abuse sweep.
 
+## D14 — design approved; window and costing constants registered
+
+**Date:** 2026-08-12 · **Decided by:** chair (design-choice pass
+DC1–DC5) · **Status:** final
+
+design.md is **approved**; all five open design choices ruled as
+proposed, and the following constants are registered (D1/D3 discipline
+— misses reported, never adjusted):
+
+1. **Windows (DC1):** W = 300 s (M1; W/σ_T0 ≈ 857); Q = 5 s (M2;
+   Q/σ_T0 ≈ 14, Q/bot_window = 100; background overlap after T0+2 s
+   accepted and reported); k = 4 equal 50-seat tranches over H = 8 s
+   (M3; spacing ≈ 5.7×σ_T0, span ≈ 23×σ_T0).
+2. **Push-cost grid (DC2):** c_push ∈ {0, ¼, ½, 1, 2} ×
+   `status_service_time`, **shared** by the R3′ waiting-room re-run and
+   the M1/M2 notification bursts — one costing model across v2; the
+   zero cell is the v1-continuity anchor.
+3. **M3 composition base (DC3):** rung-2 serving layer (fast-fail,
+   sold-out cache reset at each tranche open). A rung-4-based variant
+   is not part of the evaluated ladder.
+4. **M1 redemption (DC4):** auto-redeem — winners' bookings
+   auto-submit at T0 with standard human jitter; no redemption-window
+   mechanic (two-phase inventory stays deferred per D2).
+5. **Two-clock reporting (DC5):** allocation arms report absolute TTDA
+   (from arrival, including the deliberate wait) AND post-event
+   resolution latency (from the allocation event) as separate
+   first-class metrics, with D3 floor statements per clock.
+
+Still owed before runs (not opened by this entry): per-mechanism
+fairness *guard values* (D5 — definitions proposed in design.md,
+guards registered with bars), and every success bar with its floor
+statement (D3).
+
+**Binds:** design.md (status: approved); tasks.md structure; every
+evaluated run's window/costing configuration.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*
