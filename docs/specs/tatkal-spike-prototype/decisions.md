@@ -253,6 +253,14 @@ variants (plateau/cliff) bracket the shape uncertainty per R2.
 
 ## D14 — Gate A rulings; C=256 operationalization amended (chair, 2026-08-11)
 
+> **Parallel provenance:** a concurrent session on `main` independently
+> flagged both no-signal findings this ruling disposes of — settling
+> unmeasurable by construction and wasted-work never excited — from its
+> own spike-scale preview (`tools/run_p6_arms.py`, main commit d846b01).
+> Two independent measurements, one ruling; the flag is answered by
+> dispositions 2 and 3 below.
+
+
 **Date:** 2026-08-11 · **Decided by:** chair, on the rung-0 fitted-profile
 20-seed Gate A profile · **Status:** ratified — unblocks R4 arm runs
 
