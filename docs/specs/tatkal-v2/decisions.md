@@ -115,6 +115,61 @@ run.
 
 **Binds:** the costed-push arm's design and its pre-registered sweep.
 
+## D7 — mechanism arms baselined against rung 2 AND rung 4
+
+**Date:** 2026-08-12 · **Decided by:** chair (requirements judgment-call
+pass, JC1) · **Status:** final
+
+The mechanism-design arms (M1–M3) are compared against both the
+fast-fail baseline (v1 rung 2) and the engineering-best treatment (v1
+rung 4, waiting room). v2's question is framed as: do allocation
+mechanisms beat the best engineering-only treatment on fairness — not
+merely the naive floor. The extra cells are accepted.
+
+**Binds:** R5; every M-arm evaluation design.
+
+## D8 — FRFS in M1 is disfavoured; using it requires justification
+
+**Date:** 2026-08-12 · **Decided by:** chair (JC2) · **Status:** final
+
+First-registered-first-served allocation within the pre-registration
+window recreates the latency contest at window-open, defeating the
+arm's F5 purpose. It is **disfavoured, not banned**: choosing it
+requires a justifying decision entry. The default candidate remains a
+timing-independent rule (lottery over registrants).
+
+**Binds:** R2.1's allocation-rule decision.
+
+## D9 — bot repertoire: fixed, re-derived in the population work
+
+**Date:** 2026-08-12 · **Decided by:** chair (JC3) · **Status:** final
+
+The bot cohort's v2 behaviour repertoire is **re-derived** as part of
+the R6 population derivation (camping a window is a different strategy
+than racing a drain), then **frozen** by pre-registration before runs.
+Bots are a load and fairness probe, not a learning adversary —
+adversarial co-evolution stays deferred per D2. Carrying v1's
+drain-race repertoire unchanged was rejected as flattering the
+mechanism arms.
+
+**Binds:** R6 population document; R8.
+
+## D10 — M2 identity abuse is a swept population parameter
+
+**Date:** 2026-08-12 · **Decided by:** chair (JC4, going beyond the
+draft's specify-before-metric proposal) · **Status:** final
+
+Multi-identity prevalence is a **swept population parameter**, not a
+fixed assumption: M2's fairness is reported **as a function of abuse
+level**. The identity/duplicate-handling model must still be specified
+before M2's fairness metric is registered (the metric is meaningless
+without defining what an identity is), and the sweep grid is
+pre-registered per D3 discipline. The zero-abuse cell anchors the sweep
+(clean-identity idealization becomes a cell, not the model).
+
+**Binds:** R2.2; R6 population derivation (abuse-prevalence axis); M2's
+fairness metric registration.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*

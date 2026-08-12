@@ -1,6 +1,9 @@
 # tatkal-v2 — requirements
 
-**Status:** draft (2026-08-12) — awaiting chair ratification. Every
+**Status:** draft as amended by D7–D10 (2026-08-12) — the four open
+judgment calls are ruled (baselines D7, FRFS stance D8, bot repertoire
+D9, identity-abuse sweep D10); full-document ratification pending chair
+sign-off. Every
 numeric constant in this document is either carried from v1 with its
 source named, or explicitly marked **UNSET**; per D1's pre-registration
 discipline, an UNSET constant must be fixed by a decision entry before
@@ -99,10 +102,11 @@ leaves unallocated.
 
 - The registration flow MUST be costed as server work (registration is
   itself a spike surface — model it, don't idealize it).
-- Allocation rule within the registered pool: **UNSET** (candidates:
-  uniform lottery over registrants; first-registered-first-served is
-  explicitly disfavoured as it recreates the latency contest at
-  window-open and MUST be justified if chosen).
+- Allocation rule within the registered pool: **UNSET** (default
+  candidate: uniform lottery over registrants; first-registered-
+  first-served is disfavoured per D8 — it recreates the latency contest
+  at window-open — and choosing it requires a justifying decision
+  entry).
 
 ### R2.2 — lottery over a qualification window (arm M2)
 
@@ -112,8 +116,12 @@ construction** — this is the cleanest direct attack on F5.
 
 - Draw weighting: **UNSET** (default candidate: uniform over unique
   persistent identities, leaning on v1 R3.10).
-- Duplicate/multi-identity submission handling MUST be specified before
-  the fairness metric is registered (it is the obvious bot exploit).
+- **Identity abuse is a swept population parameter (D10):**
+  multi-identity prevalence is swept, and M2's fairness is reported as
+  a function of abuse level; the zero-abuse cell anchors the sweep, so
+  clean identities are a cell, not the model. The identity/duplicate-
+  handling model MUST still be specified before M2's fairness metric is
+  registered, and the sweep grid is pre-registered per D3 discipline.
 
 ### R2.3 — paced drain (arm M3)
 
@@ -194,10 +202,10 @@ Fixed before any evaluated run:
 - **Naive floor:** v1 rung 0.
 - **For R3:** v1 rung 4 at `c_push = 0` (the v1 model) is the anchor
   cell of the sweep.
-- **For R2 arms:** the mechanism arms are compared against rung 2 and
-  rung 4 (**engineering-best**), because the question is whether
+- **For R2 arms (D7):** the mechanism arms are compared against rung 2
+  and rung 4 (**engineering-best**), because the question is whether
   allocation mechanisms beat the best engineering-only treatment on
-  fairness — not merely the naive floor.
+  fairness — not merely the naive floor. The extra cells are accepted.
 
 ## R6 — populations and seeds (D4)
 
@@ -211,9 +219,11 @@ carried from v1's D11/20-seed protocol.
 - Mechanism arms motivate the re-derivation: lotteries and paced drains
   change what arrival timing means, and the bot cohort's strategy space
   differs when camping a window beats racing a drain. The bot cohort's
-  v2 behaviour repertoire is part of the population derivation
-  (co-evolution stays out of scope per D2 — the repertoire is fixed,
-  not adaptive).
+  v2 behaviour repertoire is re-derived here and then frozen by
+  pre-registration (D9) — bots are a probe, not a learning adversary;
+  co-evolution stays out of scope per D2.
+- Multi-identity abuse prevalence is a population axis (D10): the
+  derivation defines the abuse model and its swept range for M2.
 - Seed count: **UNSET** until derivation; the statistical decision rule
   (R7) constrains the minimum.
 - **Center-cell rule (D4, standing):** sensitivity-sweep center cells
