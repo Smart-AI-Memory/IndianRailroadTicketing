@@ -121,7 +121,14 @@ def metric_series(results: dict[int, dict], path: str) -> dict[int, float]:
 
 
 # ------------------------------------------------------------------ report
-HEADLINE_METRICS = ("ttda.winners.p99", "ttda.rejected.p99", "goodput.sold_per_s")
+# D15: the success bars bind resolution latency; TTDA stays reported as
+# the user-cost quantity (pre-firing is not free)
+HEADLINE_METRICS = (
+    "resolution.winners.p99",
+    "resolution.rejected.p99",
+    "ttda.winners.p99",
+    "goodput.sold_per_s",
+)
 GATE_A_METRICS = ("wasted_work_ratio", "settling_time_s", "fairness.bots_win_share")
 
 

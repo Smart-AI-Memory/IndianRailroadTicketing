@@ -505,6 +505,13 @@ to the point at which that user receives a final, non-retryable outcome: booked,
 sold out, or rejected. Reported separately for winners and for rejected users,
 and never averaged across both populations.
 
+**Resolution latency** (clarified by chair 2026-08-11, decisions.md D15) —
+elapsed time from **max(first request, T0)** to the definitive outcome: the
+clock starts when resolution becomes possible. Identical to TTDA for every
+post-T0 user; for pre-fire users it excludes their chosen pre-T0 lead time,
+which stays visible in TTDA ("pre-firing is not free"). **The success-criteria
+p99 bars bind resolution latency**; TTDA remains reported per population.
+
 **Goodput** — confirmed bookings per second through the spike. "Through
 the spike" means the **sell-out window**: T0 until inventory is exhausted
 (clarified by chair 2026-08-11, decisions.md D11) — goodput is a rate of
@@ -582,10 +589,12 @@ concurrency, the deepest calibrated overload — measured against the strong
 baseline (R5). Numeric values follow from the ratified constants and are
 stated alongside each formula:
 
-- p99 TTDA <= 50 × `p99_knee` (= 34.2 ms; unmitigated measures ~689 ms) —
-  binds winners and rejected users **independently** (clarified by chair
-  2026-08-11, decisions.md D11; value unchanged);
-- p99 TTDA for rejected users <= p99 TTDA for winners;
+- p99 **resolution latency** <= 50 × `p99_knee` (= 34.2 ms; unmitigated
+  measures ~689 ms) — binds winners and rejected users **independently**
+  (D11), with the operand clarified to resolution latency by D15 (the
+  TTDA-from-first-request operand was saturated identically across all
+  arms by pre-fire lead time; value unchanged both times);
+- p99 resolution latency for rejected users <= p99 for winners;
 - goodput >= 0.8 × `C_peak` (= 3892 ops/s) — a guardrail, not a success
   signal. Note this bar now *bites*: the unmitigated system delivers only
   1537 ops/s at C=256, so a candidate must recover ~2.5× of lost

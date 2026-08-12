@@ -76,6 +76,21 @@ def compute(
         if e[3] in (Outcome.SOLD_OUT.value, Outcome.MECH_REJECT.value)
     ]
 
+    # -- resolution latency (D15): definitive - max(first request, T0) -------
+    # the success-criteria bars bind THIS; TTDA above stays reported so
+    # pre-firing remains visibly not-free
+    first_req: dict[int, float] = {}
+    for e in requests:
+        if e[2] not in first_req:
+            first_req[e[2]] = e[1]
+    res_win, res_rej = [], []
+    for e in definitive:
+        lat = e[1] - max(first_req.get(e[2], e[1]), t0)
+        if e[3] == Outcome.BOOKED.value:
+            res_win.append(lat)
+        elif e[3] in (Outcome.SOLD_OUT.value, Outcome.MECH_REJECT.value):
+            res_rej.append(lat)
+
     # -- goodput over the sell-out window (D11) ------------------------------
     initial = inventory_totals["initial"]
     sellout_t = None
@@ -113,6 +128,7 @@ def compute(
 
     return {
         "ttda": {"winners": _pcts(winners), "rejected": _pcts(rejected)},
+        "resolution": {"winners": _pcts(res_win), "rejected": _pcts(res_rej)},
         "goodput": {
             "sold_per_s": goodput,
             "window_s": window,

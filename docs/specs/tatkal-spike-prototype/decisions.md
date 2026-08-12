@@ -287,13 +287,42 @@ hard-error rate, settling uncomputable 0/20):
 **Binds:** requirements R6 (Gate A items), workload.py OPERATING_WORKLOAD,
 tasks.md Gate A. R4 arm runs are now unblocked.
 
+## D15 — Success bars bind resolution latency; TTDA stays reported
+
+**Date:** 2026-08-11 · **Decided by:** chair, option (c) of the P6-flagged
+collision · **Status:** ratified — clarification, no threshold value changed
+
+**Problem.** R6's TTDA clock starts at the user's first request, and
+D10/S2 deliberately made pre-firing "not free" (clock from the first
+pre-T0 poll). Individually sound; jointly they conflate user-chosen
+pre-T0 camping (~20 s, untouchable by any mechanism — nothing can resolve
+before T0) with system latency. With ~30 pre-fire users among ~200
+winners, winners' p99 saturated at ~18.8 s for every arm — zero
+discriminating power, bar structurally unmeetable.
+
+**Ruling.** A derived quantity **resolution latency** = definitive
+outcome − max(first request, T0) — the clock starts when resolution
+becomes possible. The D11 success bars (p99 ≤ 34.2 ms for winners AND
+rejected independently; rejected ≤ winners) bind resolution latency.
+**TTDA from first request remains defined and reported** per population:
+pre-firing stays visibly not-free as a user-cost quantity.
+
+**Pre-registration defense.** The replaced operand was IDENTICAL across
+all arms (18.83 s), so the change cannot retroactively favor any
+mechanism; measured fresh, the new operand discriminates: winners' p99
+511 → 43 → 42 ms across rungs 0-2 (20 seeds), with rungs 1-2 honestly
+MISSING the 34.2 ms bar (~20% over).
+
+**Recorded finding.** The 34.2 ms bar sits ~4% above the physics floor
+for the winners population (200 seats × (hold+service) ≈ 33 ms through
+the lock): the 50× multiplier's derivation never considered
+inventory-drain physics. The value stands per pre-registration
+discipline; its near-floor strictness belongs in the write-up.
+
+**Binds:** requirements R6 (metric definitions + success criteria
+operand), measure/metrics.py, reports from P6 onward.
+
 ## Open questions (no decision yet)
 
-- **Winners' p99 TTDA vs the 34.2 ms bar (found at P6, 2026-08-11).**
-  The pre-fire cohort's TTDA clock starts at its first pre-T0 poll (~20 s
-  before T0, by ratified design), so winners' p99 is ~18.8 s for EVERY
-  arm — the D11 success bar for the winners population is structurally
-  unmeetable. Needs a chair ruling before P9 evaluation: e.g. (a) TTDA
-  measured from max(first request, T0); (b) pre-fire winners reported as
-  their own population; or (c) the bar binds post-T0 TTDA only. The
-  rejected-population bar is unaffected (rungs 1-2 meet it with room).
+*(none — the P6 TTDA collision was resolved by D15; new questions get
+logged here)*
