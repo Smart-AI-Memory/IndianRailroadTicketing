@@ -5,3 +5,4 @@ __pycache__/
 .attune/
 .ruff_cache/
 .DS_Store
+*.egg-info/

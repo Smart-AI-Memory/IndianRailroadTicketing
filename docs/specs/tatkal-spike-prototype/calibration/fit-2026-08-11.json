@@ -1,0 +1,160 @@
+{
+  "lolo": {
+    "1": {
+      "p99_ratio": 2.5284527176438756,
+      "thr_ratio": 0.974176183894668
+    },
+    "2": {
+      "p99_ratio": 1.2169604026212557,
+      "thr_ratio": 1.328400390524639
+    },
+    "4": {
+      "p99_ratio": 2.211504555068416,
+      "thr_ratio": 1.296420581655481
+    },
+    "8": {
+      "p99_ratio": 1.0716458749774678,
+      "thr_ratio": 1.1530929066157154
+    },
+    "16": {
+      "p99_ratio": 0.9655123423891044,
+      "thr_ratio": 0.9120332472766198
+    },
+    "32": {
+      "p99_ratio": 1.329179111804815,
+      "thr_ratio": 0.8190631243987272
+    },
+    "64": {
+      "p99_ratio": 1.017031434180134,
+      "thr_ratio": 0.7756365451822267
+    },
+    "128": {
+      "p99_ratio": 0.6544236644040742,
+      "thr_ratio": 0.7011837857228267
+    },
+    "256": {
+      "p99_ratio": 0.4022623534033715,
+      "thr_ratio": 0.8570034163006345
+    }
+  },
+  "meta": {
+    "chair_accepted_deviations": [
+      1,
+      2,
+      4,
+      16,
+      64,
+      128,
+      256
+    ],
+    "chair_ruling": "2026-08-11: one refinement round then accept best-of with documented deviations (see decisions.md)",
+    "duration_s": 2.0,
+    "misses_beyond_25pct": {
+      "1": {
+        "p99_ratio": 1.4949561132537776,
+        "thr_ratio": 1.0742707499818143
+      },
+      "2": {
+        "p99_ratio": 1.2119392554091415,
+        "thr_ratio": 1.3339499511844202
+      },
+      "4": {
+        "p99_ratio": 2.4650623564595047,
+        "thr_ratio": 1.3161073825503355
+      },
+      "16": {
+        "p99_ratio": 0.48392122193152676,
+        "thr_ratio": 1.091241105723821
+      },
+      "64": {
+        "p99_ratio": 0.6656576322297165,
+        "thr_ratio": 0.9973040439340989
+      },
+      "128": {
+        "p99_ratio": 0.6868727618755414,
+        "thr_ratio": 0.7731675236159273
+      },
+      "256": {
+        "p99_ratio": 0.5923158296416613,
+        "thr_ratio": 0.8039694159752725
+      }
+    },
+    "model_note": "best-of selection per chair ruling: round-1 params (congestion app_time x (1 + k*conns^gamma), 1% app-tail 5ms, sigma 0.6) beat the round-2 hold-stall variant (final loss 0.370 vs 0.611, 7 vs 9 miss levels); hold-stall mechanism retained in the model, inert (stall params 0) in the fitted profile",
+    "protocol": "design.md fit protocol (D10/S8): joint log-RMSE on medians; target +/-25%/level; LOLO +/-40%; misses -> chair review",
+    "seeds": [
+      1,
+      2,
+      3
+    ],
+    "sharded64_check": {
+      "measured_p99": 58.688,
+      "measured_thr": 2539.0,
+      "model_p99": 99.41867689610872,
+      "model_thr": 2469.0
+    },
+    "variant_thr": {
+      "cliff": {
+        "2": 5105,
+        "64": 498,
+        "256": 148
+      },
+      "fitted": {
+        "2": 6519,
+        "64": 2556,
+        "256": 1317
+      },
+      "plateau": {
+        "2": 7816,
+        "64": 7816,
+        "256": 7816
+      }
+    }
+  },
+  "objective": 0.3699993499464843,
+  "params": {
+    "congestion_k": 0.24,
+    "gamma": 0.6655000000000002,
+    "hold_ms": 0.09000000000000001,
+    "service_ms": 0.07680000000000001,
+    "tail_mean_ms": 5.0,
+    "workers": 2
+  },
+  "residuals": {
+    "1": {
+      "p99_ratio": 1.4949561132537776,
+      "thr_ratio": 1.0742707499818143
+    },
+    "2": {
+      "p99_ratio": 1.2119392554091415,
+      "thr_ratio": 1.3339499511844202
+    },
+    "4": {
+      "p99_ratio": 2.4650623564595047,
+      "thr_ratio": 1.3161073825503355
+    },
+    "8": {
+      "p99_ratio": 0.995884933368013,
+      "thr_ratio": 1.2345354669214235
+    },
+    "16": {
+      "p99_ratio": 0.48392122193152676,
+      "thr_ratio": 1.091241105723821
+    },
+    "32": {
+      "p99_ratio": 0.8873128836929972,
+      "thr_ratio": 0.9974099015762599
+    },
+    "64": {
+      "p99_ratio": 0.6656576322297165,
+      "thr_ratio": 0.9973040439340989
+    },
+    "128": {
+      "p99_ratio": 0.6868727618755414,
+      "thr_ratio": 0.7731675236159273
+    },
+    "256": {
+      "p99_ratio": 0.5923158296416613,
+      "thr_ratio": 0.8039694159752725
+    }
+  }
+}

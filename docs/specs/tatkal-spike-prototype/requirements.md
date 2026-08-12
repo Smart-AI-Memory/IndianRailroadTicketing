@@ -1,6 +1,7 @@
 # tatkal-spike-prototype — requirements
 
-**Status:** draft — updated for review (2026-08-11)
+**Status:** active — requirements ratified (2026-08-11: calibration constants
+and primary metric fixed by chair; see R6)
 
 **Purpose:** defensible systems experiment for evaluating traffic-management
 mechanisms under a realistic Tatkal-style scarcity spike.
@@ -120,6 +121,167 @@ These measurements parameterise the simulator.
 - Results are reported across multiple knee shapes.
 - Provisional calibration assumptions are documented.
 
+### Calibration status (2026-08-11)
+
+Two runs exist. The 2026-08-09 SQLite run is retained for provenance; its
+headline result was withdrawn as a harness artifact (below). The 2026-08-11
+Postgres/HTTP run is the **current calibration record** and satisfies R2's
+measurement requirements; the simulator-fit half of R2 remains open because
+the simulator does not exist yet.
+
+#### Current record — 2026-08-11: HTTP + Postgres `SELECT FOR UPDATE`
+
+Artifacts:
+
+- endpoint — `tools/r2_server.py` (HTTP/1.1 keep-alive; genuine
+  `SELECT FOR UPDATE` → decrement → commit; sold-out returned as a clean
+  rejection, preserving R6's rejection/error split at the wire level)
+- harness — `tools/calibrate_r2.py` (two regimes, measured separately)
+- raw data — `calibration/2026-08-11-postgres-http.csv`
+- engine — PostgreSQL 17.10 (Homebrew, throwaway local instance,
+  `max_connections=450`), psycopg 3, Python 3.10 client/server
+
+Spec conformance: HTTP endpoint ✓; `SELECT FOR UPDATE` ✓; concurrency
+1…256 ✓; 20 replications per level ✓; **zero hard errors across all 183
+runs**. The two regimes: *steady state* excludes each worker's first
+post-T0 request (this fits the service model and sets the constants);
+*T0 convoy* is exactly those first requests, fired at a shared instant with
+connection setup paid beforehand (this calibrates R3.5).
+
+Measured curve (medians across 20 reps; hot key, one row):
+
+| C | Throughput | p50 | p95 | p99 | convoy p99 |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 3437 ops/s | 0.26 ms | 0.46 ms | 0.54 ms | 1.7 ms |
+| 2 | **4865 ops/s** (peak) | 0.39 ms | 0.59 ms | 0.68 ms | 2.5 ms |
+| 8 | 4187 ops/s | 1.22 ms | 5.45 ms | 7.95 ms | 6.7 ms |
+| 16 | 3970 ops/s | 1.34 ms | 18.3 ms | 34.3 ms | 17.8 ms |
+| 64 | 2504 ops/s | 17.2 ms | 77.0 ms | 118 ms | 123 ms |
+| 256 | 1537 ops/s | 113 ms | 454 ms | 689 ms | 765 ms |
+
+Findings:
+
+1. **Throughput genuinely collapses** — 31.6% of peak at C=256, declining
+   monotonically past the knee. The SQLite plateau does not reproduce with
+   a real endpoint: admission control has something real to save, on both
+   goodput (3.2× lost) and tail (p99 grows ~1000×, 0.68 → 689 ms).
+2. **The tail grows smoothly with queue depth** — no cliff, no artifact.
+   Ranges across 20 reps are tight (p99 at C=256: 614–776 ms), so the
+   ≥ 20-replication requirement is sufficient to resolve 10% effects here.
+3. **No regime split under fair queueing.** Convoy p99 ≈ steady p99 at
+   every level (123 vs 118 ms at C=64). SQLite's 1300× convoy/steady split
+   was produced by its unfair busy-wait backoff, not by the load. **Queue
+   discipline, not capacity, decides whether a synchronized stampede
+   produces catastrophic tails** — which is precisely the mechanism the
+   virtual waiting room (R4 rung 4) institutionalises, and the cleanest
+   empirical motivation this spec has for it.
+4. **Sharding measured directly** — the same C=64 offered load spread over
+   8 rows instead of 1: p99 halves (118 → 59 ms) at equal throughput. This
+   retires the "SQLite overstates sharded contention" caveat with data,
+   and shows that at C=64 roughly half the queueing is the row lock and
+   the rest is app-server capacity.
+
+Constants measured (ratified as fixed by the chair, 2026-08-11 — see R6):
+
+- `N_knee` = 2 — but the knee is a region: C=2–8 all sit within 15% of peak.
+- `C_peak` = 4865 ops/s (median of 20 reps; range 4674–5004).
+- `p99_knee` = 0.684 ms (range 0.656–0.975).
+
+Two formula notes for that decision:
+
+- With `N_knee` = 2, the "≥ 8 × `N_knee`" operating point is C=16, where
+  the unmitigated system still delivers p99 ≈ 34 ms — a weak stress test.
+  The deepest measured overload is 128 × `N_knee`.
+- 50 × `p99_knee` ≈ 34 ms — almost exactly the unmitigated p99 at C=16.
+  Both multipliers predate any measurement and MUST be re-derived, not
+  carried over (see also: the 50× silently bridges user-level TTDA to
+  single-transaction service p99).
+
+**Resolved (chair, 2026-08-11).** The operating point moves to C=256, the
+deepest calibrated overload (128 × `N_knee` with current constants), where
+the coincidence disappears: the unmitigated system delivers p99 ≈ 689 ms
+against a 50 × `p99_knee` ≈ 34 ms bar. The 50× multiplier is retained —
+re-checked against measurement rather than carried over blindly: it sits
+~20× below the unmitigated tail (a real distinction to clear) and is
+achievable only by an arm whose rejections are actually fast, which is the
+behaviour the experiment exists to reward.
+
+Limitations of this run: the single-process Python HTTP server is part of
+the measured system and contributes materially past ~C=32 (the sharded
+control isolates this) — realistic in kind, laptop-specific in degree; one
+machine, no cross-hardware check; uncontended service time is ~0.3 ms, still
+far below a production request with auth, serialisation, and network.
+
+#### Withdrawn — 2026-08-09: SQLite hot-key run
+
+Artifacts, retained for provenance:
+
+- harness — `tools/calibrate_lock_contention.py`
+- raw data — `calibration/2026-08-09-sqlite-hotkey.csv`
+
+#### Gaps against R2 as specified
+
+| R2 requires | The 2026-08-09 run |
+|---|---|
+| HTTP endpoint, ~150 lines | no HTTP layer; in-process database calls only |
+| `SELECT FOR UPDATE` row locking | SQLite `BEGIN IMMEDIATE`, a database-wide writer lock |
+| concurrency 1, 2, 4, ... 256 | 1, 2, 4, ... 64 |
+
+#### The recorded tail result is a harness artifact and MUST NOT be used
+
+The run reported p99 ≈ 2050 ms at concurrency 64 against ≈ 1.8 ms at the knee,
+and an earlier revision of this document promoted tail latency to primary metric
+on that basis.
+
+Re-running the harness with each latency sample tagged by the offset at which
+its transaction started shows that every sample above 100 ms is a worker's
+*first* transaction, at offset 0.000. All workers busy-spin to a shared start
+timestamp and then contend simultaneously; SQLite's busy-handler backoff ladder
+stretches the unlucky ones to roughly two seconds. This is a one-shot startup
+transient, not steady-state contention:
+
+- the count of slow samples tracks the worker count, not the window length —
+  64 slow samples in a 2 s window, 80 in a 20 s window;
+- whether p99 captures the transient depends only on whether the worker count
+  exceeds 1% of total samples — which flips with ordinary run-to-run throughput
+  variance (2226–4033 ops/s at fixed concurrency, on one machine);
+- a re-run at the same concurrency on the same machine gave p99 = 1.62 ms
+  against the 2049 ms recorded here: the re-run's higher throughput (~7,800
+  samples vs ~5,700) pushed the 1% rank past the worker count.
+
+Corrected, the run shows throughput plateauing at ~80% of peak past the knee
+with a flat tail; the harness's own summary classifies this shape as `PLATEAU`.
+That is the case in which admission control has least to recover, so R2's rerun
+determines whether the ablation ladder has a measurable subject at all.
+
+**Consequently the choice of primary metric could not rest on this run.**
+The 2026-08-11 rerun (above) now supplies the evidence: with a real endpoint
+both goodput and tail degrade measurably (3.2× and ~1000× respectively).
+The chair decided on 2026-08-11: p99 TTDA is primary with goodput as
+guardrail, evaluated at C=256 — see R6 for the ratified constants and
+rationale.
+
+#### Standing limitations of the SQLite approach
+
+Applicable to any rerun that keeps SQLite:
+
+- SQLite serialises **all** writes database-wide; Postgres locks per row. For
+  the hot-key case (one train, everyone contending) SQLite is a fair analogue.
+  For the sharded case (R4 rung 3) it **overstates** contention, because
+  different trains would not block each other under Postgres.
+- Measured service time is ~0.2 ms — a bare row update with no application
+  logic, network hop, or serialisation cost. Real per-request service time will
+  be substantially larger, which moves `N_knee` down and may change the shape
+  of the curve.
+- Run-to-run variance is large: throughput ranged 2226–4033 ops/s at fixed
+  concurrency. This is why R6 requires at least 20 replications; constants
+  derived from 3 replications are not usable.
+- Zero errors were observed at every level. With a busy timeout set, overload
+  manifests as latency and never as failure, so an error-rate threshold would
+  measure nothing until an admission mechanism introduces deliberate rejection.
+- One machine, one run, no cross-hardware check. Absolute numbers are
+  laptop-specific; the transferable finding is the *shape* of the curve.
+
 ---
 
 ## R3 — simulator fidelity / anti-requirements
@@ -204,10 +366,24 @@ experiment.
 
 ---
 
-# R4 — ablation ladder
+## R4 — ablation ladder
 
 All mechanisms MUST be implemented as pluggable strategies over the same
 simulator.
+
+**The ladder is cumulative.** Rung k enables every mechanism of rungs 1
+through k−1 plus one new mechanism, so each rung's delta isolates exactly one
+addition. (This is already implicit in R5: the strong baseline is rung 2 —
+bounded admission + fast-fail stacked.) An arm evaluated outside the ladder,
+e.g. a mechanism run standalone, MUST be labelled as such and MUST NOT be
+reported as a rung.
+
+**Ordering caveat.** Marginal deltas are conditional on this ordering: a
+mechanism added late inherits interaction effects with everything below it,
+so "rung 5 added 3%" means "given rungs 1–4 were already present." The
+results MUST state this. Where an interaction is suspected of hiding or
+inflating a mechanism's contribution, a targeted out-of-order run MAY be
+reported alongside the ladder, clearly labelled.
 
 ### Rung 0 — Naive
 
@@ -247,13 +423,14 @@ Evaluate the ML bot/automation classification arm described in R7.
 
 - Every rung runs against the same seeds.
 - Every rung runs against the same workload definitions.
-- Results report the marginal delta from the preceding rung.
-- Confidence intervals are reported.
+- Results report the marginal delta from the preceding rung, computed as
+  paired per-seed differences (see R6, *Statistical decision rule*).
+- A confidence interval on the paired delta is reported for every rung.
 - Adaptive and ML arms are compared against the strong baseline in R5.
 
 ---
 
-# R5 — baselines
+## R5 — baselines
 
 ### Weak baseline
 
@@ -271,27 +448,41 @@ naive baseline.
 
 ---
 
-# R6 — pre-registered evaluation criteria
+## R6 — pre-registered evaluation criteria
 
 Evaluation thresholds MUST be fixed before the relevant experiment is run.
+
+R2 is itself an experiment, and it supplies the constants these thresholds are
+written against. The required ordering is therefore:
+
+1. R2 runs and its constants are reported;
+2. the thresholds below are fixed against those constants and recorded;
+3. R4's arms are run.
+
+Pre-registration binds step 3. Constants MUST NOT be revised after step 2 to
+accommodate a result.
 
 Metrics MUST be reported at p50, p95, and p99.
 
 Where applicable, metrics MUST be split between successful and rejected users.
 
-## Primary metric
-
-### Tail time-to-definitive-answer
+### Primary metric — tail time-to-definitive-answer
 
 The primary metric is p99 time-to-definitive-answer.
 
-## Guardrail
+> **Ratified (chair, 2026-08-11).** Originally justified by a withdrawn
+> result, the choice now rests on the 2026-08-11 rerun: the tail degrades
+> ~1000× (0.68 → 689 ms) while queue discipline — not capacity — determines
+> whether a synchronized stampede produces catastrophic tails, so tail
+> behaviour is what the candidate mechanisms actually move. Goodput (3.2×
+> lost at C=256) is the guardrail: it must be recovered, but recovering it
+> without fast definitive answers is not success.
 
-### Goodput
+### Guardrail — goodput
 
 Goodput is confirmed bookings per second through the spike.
 
-## Other required metrics
+### Other required metrics
 
 - inventory correctness;
 - time-to-definitive-answer for winners and rejected users;
@@ -304,43 +495,162 @@ Goodput is confirmed bookings per second through the spike.
 
 Clean rejection and hard errors MUST NOT be summed.
 
+### Metric definitions
+
+Every metric MUST be computed as defined here, and these definitions MUST be
+fixed before the relevant experiment runs.
+
+**Time-to-definitive-answer (TTDA)** — elapsed time from a user's first request
+to the point at which that user receives a final, non-retryable outcome: booked,
+sold out, or rejected. Reported separately for winners and for rejected users,
+and never averaged across both populations.
+
+**Goodput** — confirmed bookings per second through the spike. "Through
+the spike" means the **sell-out window**: T0 until inventory is exhausted
+(clarified by chair 2026-08-11, decisions.md D11) — goodput is a rate of
+converting scarcity, not an inventory-capped total.
+
+**Inventory correctness** — seats sold as a percentage of inventory, together
+with counts of double-sold seats and lost seats.
+
+**Clean-rejection rate** — share of requests that receive a definitive,
+well-formed rejection, for example "sold out" or a queue position.
+
+**Hard-error rate** — share of requests that fail without a definitive answer:
+connection reset, timeout with no response, or 5xx.
+
+**Retry amplification** — total requests / unique user intents.
+
+**Wasted-work ratio** — server-seconds spent on abandoned or timed-out requests
+/ total server-seconds.
+
+**Fairness** — two quantities, both reported:
+
+1. seat share by arrival cohort (pre-fire, T0, retry wave); and
+2. the bot cohort's win share relative to its share of the population.
+
+**Settling time** — seconds from T0 until latency has returned to its
+pre-spike level and stayed there, computed as:
+
+- p99 latency over a **1-second rolling window**;
+- the pre-spike level is that same windowed p99 measured over the interval
+  ending 10 seconds before T0;
+- settled means the windowed p99 remains within **2× the pre-spike level for
+  5 consecutive seconds**; settling time is measured to the *start* of that
+  sustained interval.
+
+The window width, tolerance factor, and sustain duration are part of the
+pre-registered definition; runs MUST NOT alter them per-arm. If a sweep
+changes timescales enough to justify different values, the change applies to
+every arm and is recorded.
+
+### Calibration-derived constants
+
+Success criteria are stated as formulas over quantities measured by R2, so that
+they recalibrate when R2 is rerun on different hardware or against a different
+engine.
+
+- **`N_knee`** — offered concurrency at which median throughput peaks.
+- **`C_peak`** — median throughput at `N_knee`, in operations per second.
+- **`p99_knee`** — p99 service latency at `N_knee`.
+
+Each MUST be reported as a median across at least 20 replications, together with
+its observed range.
+
+**Status: FIXED — ratified by the chair, 2026-08-11**, from the 2026-08-11
+calibration run (R2, *Calibration status*):
+
+| Constant | Value | Basis |
+|---|---|---|
+| `N_knee` | 2 (knee region 2–8) | median-throughput peak, 20 reps |
+| `C_peak` | 4865 ops/s | range 4674–5004 |
+| `p99_knee` | 0.684 ms | range 0.656–0.975 |
+| Operating point | C=256 (128 × `N_knee`) | deepest calibrated overload |
+
+The pre-measurement "≥ 8 × `N_knee`" operating point was re-derived to
+C=256 (rationale in R2, *Resolved*); the 50× threshold multiplier was
+retained after checking against measurement. Per the ordering above these
+values now bind R4's runs and MUST NOT be revised to accommodate a result.
+They recalibrate only if R2 is rerun on different hardware or a different
+engine, in which case the new values are recorded here with the same
+ratification step.
+
 ### Success criteria
 
-For a candidate arm at sufficiently high offered concurrency:
+For a candidate arm at the ratified operating point — C=256 offered
+concurrency, the deepest calibrated overload — measured against the strong
+baseline (R5). Numeric values follow from the ratified constants and are
+stated alongside each formula:
 
-- p99 time-to-definitive-answer <= 50 × p99_knee;
-- p99 answer time for rejected users <= p99 answer time for winners;
-- goodput >= 0.8 × C_peak;
+- p99 TTDA <= 50 × `p99_knee` (= 34.2 ms; unmitigated measures ~689 ms) —
+  binds winners and rejected users **independently** (clarified by chair
+  2026-08-11, decisions.md D11; value unchanged);
+- p99 TTDA for rejected users <= p99 TTDA for winners;
+- goodput >= 0.8 × `C_peak` (= 3892 ops/s) — a guardrail, not a success
+  signal. Note this bar now *bites*: the unmitigated system delivers only
+  1537 ops/s at C=256, so a candidate must recover ~2.5× of lost
+  throughput while also cutting the tail ~20×; an arm that fails the
+  guardrail has traded throughput for latency and MUST justify that;
 - 100% of inventory accounted for;
 - zero double-sold seats;
 - zero lost seats;
 - retry amplification < 1.5×.
 
-## What counts as "did not help"
+A win in one corner of the parameter sweep is not a win; the sensitivity table
+ships with the result.
 
-A candidate arm MUST be reported as "did not help" when its primary p99
-improvement falls within the 95% confidence interval of the strong baseline
-across at least 20 seeded replications.
+### Thresholds not yet set
+
+The following metrics are required but have no pre-registered threshold. Each
+MUST be given one before R4 runs, or be explicitly designated report-only:
+
+- wasted-work ratio;
+- fairness — note that R7.1 rests the ML case on fairness, and the improvement
+  rule below already references a 5% fairness regression bound, so this gap is
+  load-bearing;
+- settling time.
+
+### Statistical decision rule
+
+R1 mandates identical seeds across arms, which makes every comparison a
+**paired** design. Comparisons MUST exploit this: for each seed i, compute
+the per-seed difference
+
+`delta_i = metric(candidate, seed_i) − metric(baseline, seed_i)`
+
+and report the distribution of `delta_i` across at least 20 seeded
+replications, with a 95% confidence interval on its median (or mean, stated
+in advance).
+
+Comparing the two arms' independently computed confidence intervals and
+checking for overlap is NOT an acceptable test: it discards the pairing the
+shared seeds exist to provide, and CI overlap is not equivalent to any
+stated significance level.
+
+### What counts as "did not help"
+
+A candidate arm MUST be reported as "did not help" when the 95% confidence
+interval of its paired per-seed delta on the primary metric includes zero.
 
 A claim of improvement requires:
 
 - at least 10% improvement on the primary p99 metric;
-- non-overlapping confidence intervals; and
+- the paired delta's 95% confidence interval excluding zero; and
 - no greater than 5% regression in goodput or fairness.
 
 Sensitivity results MUST be included.
 
 ---
 
-# R7 — ML scope
+## R7 — ML scope
 
-## Explicitly out of scope
+### Explicitly out of scope
 
 Load prediction for the known Tatkal opening instant is out of scope for v1.
 
-## ML/control mechanisms in scope
+### ML/control mechanisms in scope
 
-### R7.1 — bot/automation classification
+#### R7.1 — bot/automation classification
 
 Bot classification is included because it addresses fairness rather than
 primarily throughput.
@@ -348,16 +658,21 @@ primarily throughput.
 If bots are generated using a known signature, the evaluation MUST acknowledge
 the circularity risk. Held-out behaviours SHOULD be used where possible.
 
-### R7.2 — adaptive concurrency limiting
+#### R7.2 — adaptive concurrency limiting
 
 Adaptive concurrency limiting is treated primarily as a control problem.
 
-### R7.3 — per-train demand forecasting
+#### R7.3 — per-train demand forecasting
 
 Forecasting is limited to which trains/classes will be hot, how hot they will
 be, and implications for pre-warming and shard placement.
 
-## Equal-effort rule
+> **Omitted from v1** by chair ruling (2026-08-11, decisions.md D11). The
+> scope definition above stands for v2. If ever built, it runs as a
+> labelled out-of-order interaction arm against rung 3, never as a ladder
+> rung.
+
+### Equal-effort rule
 
 Any ML arm that is included MUST receive comparable engineering effort to
 classical mechanisms.
@@ -366,7 +681,7 @@ An ML mechanism MUST NOT be assumed to help before measurement.
 
 ---
 
-# R8 — virtual waiting room hypothesis
+## R8 — virtual waiting room hypothesis
 
 The waiting room is explicitly treated as a hypothesis rather than an assumed
 solution.
@@ -457,12 +772,28 @@ Before implementation is considered complete for the requirements phase:
 - R3 fidelity parameters are explicitly named and toggleable.
 - Baselines are fixed.
 - Primary metrics and guardrails are fixed before experiments.
+- Every metric named in R6 has a definition.
+- Every constant used in a threshold is either fixed or explicitly marked unset.
+- Metrics required but not yet thresholded are listed as such.
 - ML scope and exclusions are explicit.
 - v1/v2 boundaries are explicit.
 - Calibration limitations are documented.
 - Waiting-room status-check traffic is explicitly included.
 - No experiment requires contacting IRCTC.
 - Open assumptions are identified rather than silently treated as facts.
+
+All checklist items are satisfied as of 2026-08-11: the chair ratified the
+calibration constants (`N_knee` = 2, `C_peak` = 4865 ops/s,
+`p99_knee` = 0.684 ms), the C=256 operating point, and the primary metric
+(p99 TTDA, goodput guardrail). **The requirements phase is complete.**
+
+Carried into the build phase, not blockers here:
+
+- the simulator-fit half of R2's acceptance (fit the server model, plot the
+  fit, report multiple knee shapes) — requires the simulator to exist;
+- thresholds for wasted-work ratio, fairness, and settling time (see
+  *Thresholds not yet set*) — MUST be set or designated report-only before
+  any R4 arm runs.
 
 ---
 
