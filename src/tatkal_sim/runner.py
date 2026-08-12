@@ -74,6 +74,7 @@ class Arm:
     ccfg: ClientConfig = field(default_factory=ClientConfig)
     wcfg: WorkloadConfig = field(default_factory=lambda: OPERATING_WORKLOAD)
     variant: str = "fitted"  # knee-shape profile name (R2 acceptance)
+    rung: int = 0  # cumulative ladder rung (D5); 0 = naive bare server
     out_of_order: bool = False  # R4/D5: labelled, never reported as a rung
 
 
@@ -85,7 +86,10 @@ def run_arm_once(arm: Arm, seed: int) -> dict:
     intents = generate_intents(arm.wcfg, arm.fidelity, streams)
     log: list = []
     server = Server(clock, queue, streams, arm.fidelity, arm.scfg, arm.wcfg.t0, log=log)
-    engine = ClientEngine(clock, queue, streams, arm.fidelity, arm.ccfg, arm.wcfg, server, log=log)
+    from tatkal_sim.strategies.base import build_rung  # local: avoids import cycle
+
+    service = build_rung(arm.rung, server, clock, queue)
+    engine = ClientEngine(clock, queue, streams, arm.fidelity, arm.ccfg, arm.wcfg, service, log=log)
     engine.start(intents)
     queue.run(max_events=5_000_000)
     server.inventory.assert_ok()  # invariants run on EVERY run (R3.4)
