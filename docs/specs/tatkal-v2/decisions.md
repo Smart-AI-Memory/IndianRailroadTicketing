@@ -279,6 +279,89 @@ statement (D3).
 **Binds:** design.md (status: approved); tasks.md structure; every
 evaluated run's window/costing configuration.
 
+## D15 — tasks.md approved; ladder active
+
+**Date:** 2026-08-12 · **Decided by:** chair · **Status:** final
+
+tasks.md (V0–V7 with Gate B) is **approved**; the ladder is active and
+binding as gated. V0 begins immediately. Gate B remains the chair
+decision standing between implementation (V0–V4) and every evaluated
+run (V5–V6); the V0.2 reproduction tolerance is the one chair
+registration inside the build phases.
+
+**Binds:** tasks.md (status: approved, ladder active); build-phase
+sequencing.
+
+## D16 — reproduction tolerance: exact (bit-identical)
+
+**Date:** 2026-08-12 · **Decided by:** chair (V0.2 registration) ·
+**Status:** final
+
+The V0.2 reproduction tolerance is **exact**: the designated v1 arm
+re-run on the v2 tree, and R3′'s zero-cost cell against v1 rung 4,
+must reproduce metric values bit-identically. R1's determinism and the
+named-RNG-stream design make this achievable; any deviation is a real
+physics change and fails loudly. Mechanism: a golden-snapshot anchor
+test (designated arm: rung 2, fitted variant, operating workload,
+fixed seed) captured while the v2 tree is code-identical to v1, run in
+CI thereafter.
+
+**Binds:** V0.2's anchor test; V3.4's acceptance.
+
+## D17 — GATE B passed: bars, guards, multiplicity registered
+
+**Date:** 2026-08-12 · **Decided by:** chair (Gate B pass GB1–GB4,
+informed by V4's floor document and comparison inventory) · **Status:**
+final — evaluated runs may begin
+
+1. **Bars (GB1, floor-relative 3×, per clock/variant/grid point):**
+   M1/M2 post-event resolution p99 ≤ 3× the burst floor at each c_push
+   grid point; loser absolute TTDA ≤ deliberate wait + 3× burst floor;
+   M3 whole-run ≤ H + 3× last-tranche drain floor. **Report-only** (a
+   finding, never pass/fail): M3 seats-sold, M2 ghost_sales.
+2. **Fairness guards (GB2/GB2b, D5 executed):** at p = 0 every bot
+   strategy's controller-level draw-share advantage ≤ 1.05 in M1/M2
+   (P1-consistent). At p > 0 the identity-split controller advantage is
+   guarded at **≤ m (= 5)** — the no-super-linear-amplification guard —
+   with the full advantage curve reported. M3 whole-run F-ratio and R3′
+   F-ratio: no regression > 5% vs their rung-2/rung-4 comparators.
+3. **Multiplicity (GB3):** Holm–Bonferroni within each comparison
+   family (M1, M2, M3, R3′) over the 22 inventoried primary
+   comparisons; the inventory in floors.md is the closed list.
+4. **M3 allotment (GB4):** D14.1 amended — per-pool tranches
+   [7, 6, 6, 6] (global [56, 48, 48, 48], remainder front-loaded); the
+   equal-50 wording was infeasible at 25 seats/pool. Deviation was
+   flagged at implementation and is resolved by this entry.
+5. **Improvement-claim rule carries v1:** ≥ 10% on the primary metric,
+   paired 95% CI excluding zero, ≤ 5% regression in goodput/fairness.
+6. Smoke findings recorded as expected behaviour: M2 ghost_sales
+   (patience/confirmation race; two-phase inventory deferred, D2) and
+   M3 undersell (paced drain vs departing rejected demand) are
+   report-only mechanism findings.
+
+**Binds:** every V5/V6 evaluated run; V7's grading.
+
+## D18 — V7 grading rulings: P1 CI-evaluated; c=0 bar miss + floor amendment
+
+**Date:** 2026-08-12 · **Decided by:** chair (V7 grading pass) ·
+**Status:** final
+
+1. **P1/race guard: CI-evaluated, no breach.** The 1.05 guard is graded
+   on the registered paired-CI rule: race's excess-over-1 CI
+   [−0.010, +0.214] includes zero and the leak investigation found no
+   mechanism (the draw is uniform over active identities by
+   construction). P1 stands **confirmed**; the 1.090 point value is
+   recorded as sampling noise at 90 controllers.
+2. **M1/M2 combined post-event bar at c_push = 0: MISS as registered.**
+   The 3×-burst-floor bar is degenerate at c = 0 because the floor
+   derivation omitted the winner-redemption drain; per D3 the miss is
+   recorded, never adjusted. **Prospective amendment:** for any future
+   cell, the post-event floor is max(burst drain, winner-redemption
+   drain). The loser-clock bars, which pass by construction at c = 0,
+   are unaffected.
+
+**Binds:** RESULTS.md grading; any future M1/M2 cell's floor.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*
