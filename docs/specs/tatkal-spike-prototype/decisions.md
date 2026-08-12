@@ -205,6 +205,19 @@ Full transcript: `~/.attune/reports/roundtable/q-tatkal-spec-docs-review-001.md`
 **Binds:** requirements R6 (clarifying notes), design.md measurement,
 tasks.md P8.
 
+## D12 — Chair sign-off: design.md and tasks.md approved; build phase opens
+
+**Date:** 2026-08-11 · **Decided by:** chair · **Status:** ratified
+
+design.md and tasks.md, as amended under D10/D11 and unanimously
+approve-with-amendments'd by the round table (thread
+`q-tatkal-spec-docs-review-001`), are **approved**. The task ladder is
+binding as gated: P0 begins immediately; Gate A remains the only chair
+decision standing between P5 and the first R4 arm run.
+
+**Binds:** design.md (status: approved), tasks.md (status: approved,
+ladder active).
+
 ## Open questions (no decision yet)
 
 - **Fairness threshold at Gate A** — the metric definition (seat share by

@@ -1,6 +1,6 @@
 # tatkal-spike-prototype — tasks
 
-**Status:** draft — awaiting chair approval of the ladder
+**Status:** approved — ladder active (chair sign-off 2026-08-11, decisions.md D12)
 
 **Basis:** requirements.md (ratified 2026-08-11), design.md (draft),
 decisions.md D1–D11. Amended 2026-08-11 per round-table review (D10) and

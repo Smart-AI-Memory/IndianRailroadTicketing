@@ -1,6 +1,6 @@
 # tatkal-spike-prototype — design
 
-**Status:** draft — awaiting chair approval
+**Status:** approved (chair sign-off 2026-08-11 — decisions.md D12)
 
 **Basis:** requirements.md (ratified 2026-08-11), the 2026-08-11 calibration
 record, and decisions.md D1–D11. Every design element traces to a requirement;
