@@ -292,6 +292,22 @@ registration inside the build phases.
 **Binds:** tasks.md (status: approved, ladder active); build-phase
 sequencing.
 
+## D16 — reproduction tolerance: exact (bit-identical)
+
+**Date:** 2026-08-12 · **Decided by:** chair (V0.2 registration) ·
+**Status:** final
+
+The V0.2 reproduction tolerance is **exact**: the designated v1 arm
+re-run on the v2 tree, and R3′'s zero-cost cell against v1 rung 4,
+must reproduce metric values bit-identically. R1's determinism and the
+named-RNG-stream design make this achievable; any deviation is a real
+physics change and fails loudly. Mechanism: a golden-snapshot anchor
+test (designated arm: rung 2, fitted variant, operating workload,
+fixed seed) captured while the v2 tree is code-identical to v1, run in
+CI thereafter.
+
+**Binds:** V0.2's anchor test; V3.4's acceptance.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*
