@@ -188,6 +188,21 @@ until it exists).
 **Binds:** requirements.md (status: ratified); the design phase's
 sequencing.
 
+## D12 — baselines run under the v2 population; v1 numbers not citable in comparisons
+
+**Date:** 2026-08-12 · **Decided by:** chair (population-derivation §4)
+· **Status:** final
+
+The D7 engineering baselines (rung 2, rung 4) are **re-run under the v2
+population** on the same paired seeds as the mechanism arms; all v2
+comparisons use these re-runs. v1's absolute rung numbers are **not
+citable in v2 comparisons** — the paired design does not cross
+versions. The v1-population re-run survives only as R1's physics
+regression check and is never compared against mechanism arms.
+
+**Binds:** R5 baselines; population-derivation §4/§5; every D7
+comparison's data provenance.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*

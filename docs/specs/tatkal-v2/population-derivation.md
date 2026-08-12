@@ -116,16 +116,15 @@ floor:* no evaluated cell below the main-sweep seed count, whatever it
 is registered to be; centers reuse main-sweep data (D4, standing).
 Count: **UNSET**.
 
-## 4. Baseline-population question (needs a ruling)
+## 4. Baseline population (RULED — D12)
 
 D7 baselines (rung 2, rung 4) and the R2 mechanism arms must be
 compared on **paired seeds over the same population** — otherwise the
-paired design is void. *Proposed:* engineering baselines are re-run
-under the **v2 population** for all D7 comparisons; the v1-population
-re-run exists only as R1's physics regression check and is never
-compared against mechanism arms. This needs a decision entry — it
-determines whether v1's rung-2/rung-4 numbers are citable in v2
-comparisons (under this proposal: they are not; only v2 re-runs are).
+paired design is void. **Ruled (D12):** engineering baselines are
+re-run under the **v2 population** for all D7 comparisons; v1's
+absolute rung numbers are not citable in v2 comparisons; the
+v1-population re-run exists only as R1's physics regression check and
+is never compared against mechanism arms.
 
 ## 5. Documented break from v1 (running table — §the D4 record)
 
@@ -136,7 +135,7 @@ comparisons (under this proposal: they are not; only v2 re-runs are).
 | 3 | bot repertoire | race + mimic (3 families) | 4-strategy set (A3), frozen | race/mimic cells comparable; camp/identity-split have no v1 counterpart |
 | 4 | identity model | 1 identity per user (implicit) | abuse axis per D10 | v1 ≙ v2 zero-abuse cell **only** |
 | 5 | seeds | 20 main sweeps | UNSET | paired stats never cross versions |
-| 6 | baseline population | v1 workload | v2 re-runs per §4 (proposed) | v1 absolute numbers not citable in v2 comparisons (pending §4 ruling) |
+| 6 | baseline population | v1 workload | v2 re-runs (D12) | v1 absolute numbers not citable in v2 comparisons — **final** |
 
 Rows are appended as derivation proceeds; a row is *final* only when
 its constants are registered.
@@ -150,7 +149,7 @@ its constants are registered.
 | A3 bot repertoire | open — 4-strategy set proposed (D9 freeze pending) |
 | A4 identity abuse | open — prevalence-sweep model proposed (D10) |
 | A5 seeds | open |
-| §4 baseline population | **needs chair ruling** |
+| §4 baseline population | **ruled — D12** |
 
 ## 7. Open questions
 
