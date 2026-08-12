@@ -505,7 +505,10 @@ to the point at which that user receives a final, non-retryable outcome: booked,
 sold out, or rejected. Reported separately for winners and for rejected users,
 and never averaged across both populations.
 
-**Goodput** — confirmed bookings per second through the spike.
+**Goodput** — confirmed bookings per second through the spike. "Through
+the spike" means the **sell-out window**: T0 until inventory is exhausted
+(clarified by chair 2026-08-11, decisions.md D11) — goodput is a rate of
+converting scarcity, not an inventory-capped total.
 
 **Inventory correctness** — seats sold as a percentage of inventory, together
 with counts of double-sold seats and lost seats.
@@ -579,7 +582,9 @@ concurrency, the deepest calibrated overload — measured against the strong
 baseline (R5). Numeric values follow from the ratified constants and are
 stated alongside each formula:
 
-- p99 TTDA <= 50 × `p99_knee` (= 34.2 ms; unmitigated measures ~689 ms);
+- p99 TTDA <= 50 × `p99_knee` (= 34.2 ms; unmitigated measures ~689 ms) —
+  binds winners and rejected users **independently** (clarified by chair
+  2026-08-11, decisions.md D11; value unchanged);
 - p99 TTDA for rejected users <= p99 TTDA for winners;
 - goodput >= 0.8 × `C_peak` (= 3892 ops/s) — a guardrail, not a success
   signal. Note this bar now *bites*: the unmitigated system delivers only
@@ -661,6 +666,11 @@ Adaptive concurrency limiting is treated primarily as a control problem.
 
 Forecasting is limited to which trains/classes will be hot, how hot they will
 be, and implications for pre-warming and shard placement.
+
+> **Omitted from v1** by chair ruling (2026-08-11, decisions.md D11). The
+> scope definition above stands for v2. If ever built, it runs as a
+> labelled out-of-order interaction arm against rung 3, never as a ladder
+> rung.
 
 ### Equal-effort rule
 

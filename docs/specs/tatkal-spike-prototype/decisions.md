@@ -145,11 +145,69 @@ tasks.md
    load-bearing (R7.1 rests the ML case on it; the improvement rule
    references a 5% fairness regression bound). → Gate A in tasks.md.
 
+## D10 — Round-table review of design/tasks/decisions: approve with amendments
+
+**Date:** 2026-08-11 · **Decided by:** round table (thread
+`q-tatkal-spec-docs-review-001`, board msgs 2, 3, 4, 8; halted round 1 on
+convergence), chair-promoted · **Status:** ratified
+
+All three seats independently approved the architecture, determinism
+design, 10/10 R3 toggle mapping, Gate A placement, and buildability — and
+independently converged on an amendment set applied under this decision:
+
+- **C3** retry-wave is a request-level phenomenon, not a user cohort:
+  fairness classifies users by *first-arrival* cohort.
+- **C4** direction-of-effect tests assert measurable deltas, not
+  absolutes; rung 0's "unbounded concurrency" means unbounded *admission*
+  over the always-finite R3.3 backend.
+- **S1** rung 6's intervention defined: two-priority deprioritization of
+  flagged users, never hard rejection.
+- **S2** pre-T0 semantics: no inventory allocation before T0; early
+  requests get a clean "not open" rejection.
+- **S3** both comparison families computed and reported: rung-vs-
+  predecessor and arm-vs-strong-baseline.
+- **S4/S7** bootstrap: seeded `stats` RNG stream, B=10,000, percentile
+  method; accept-queue overflow policy explicit; `conn_limit`
+  non-optional.
+- **S5** C=256 operationalized: rung-0 measured peak in-flight in
+  [T0, T0+1 s] = 256 ± 5%; identical per-seed intent traces across arms.
+- **S6** status-endpoint saturation criterion defined (see design.md
+  waiting room).
+- **S8** P4 fit gets a predeclared objective, tolerance, miss path, and
+  overfit guard.
+- Sold-out eviction is REQUIRED in the rung-4 waiting room (Antigravity's
+  failure case); a pure-queuing variant is admissible only as a labelled
+  out-of-order run. Gate A must define the fairness *statistic and
+  regression calculation*, not merely a value (Codex). A rung-0 profile
+  of the three unthresholded metrics is added to P5 to inform Gate A
+  (Antigravity).
+
+Full transcript: `~/.attune/reports/roundtable/q-tatkal-spec-docs-review-001.md`
+(machine-local).
+
+## D11 — Chair clarification rulings on ratified criteria; R7.3 omitted
+
+**Date:** 2026-08-11 · **Decided by:** chair (board msg 10) · **Status:**
+**ratified — clarifications only, no ratified constant value changed**
+
+1. **The 34.2 ms p99 TTDA success bar binds winners AND rejected users
+   independently.** Coherent with the existing "rejected ≤ winners"
+   criterion; resolves the C1 ambiguity all three seats flagged.
+2. **Goodput is measured over the sell-out window** — T0 until inventory
+   exhausted. Goodput is thereby a *rate* of converting scarcity
+   (mechanism-sensitive), not an inventory-capped total; "through the
+   spike" in R6 means this window.
+3. **R7.3 (per-train demand forecasting) is omitted from v1**, recorded
+   per Codex's condition. The R7.3 scope definition stands for v2. If
+   ever built, it is an out-of-order interaction arm paired against
+   rung 3 — never a ladder rung (D5).
+
+**Binds:** requirements R6 (clarifying notes), design.md measurement,
+tasks.md P8.
+
 ## Open questions (no decision yet)
 
-- **Fairness threshold value** — needs a chair decision at Gate A; the
-  metric definition (seat share by cohort; bot win share vs population
-  share) is fixed, the pass/fail bar is not.
-- **Whether R7.3 (demand forecasting) ships in v1** — R4's ladder has no
-  rung for it; it only feeds shard pre-warming. Proposed disposition in
-  tasks.md P8 (optional, chair call).
+- **Fairness threshold at Gate A** — the metric definition (seat share by
+  first-arrival cohort; bot win share vs population share) is fixed; the
+  pass/fail bar is not. Per D10, Gate A must also define the scalar
+  statistic and how "5% regression" is computed over the two quantities.
