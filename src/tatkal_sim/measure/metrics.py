@@ -76,6 +76,21 @@ def compute(
         if e[3] in (Outcome.SOLD_OUT.value, Outcome.MECH_REJECT.value)
     ]
 
+    # -- resolution latency (D15): definitive - max(first request, T0) -------
+    # the success-criteria bars bind THIS; TTDA above stays reported so
+    # pre-firing remains visibly not-free
+    first_req: dict[int, float] = {}
+    for e in requests:
+        if e[2] not in first_req:
+            first_req[e[2]] = e[1]
+    res_win, res_rej = [], []
+    for e in definitive:
+        lat = e[1] - max(first_req.get(e[2], e[1]), t0)
+        if e[3] == Outcome.BOOKED.value:
+            res_win.append(lat)
+        elif e[3] in (Outcome.SOLD_OUT.value, Outcome.MECH_REJECT.value):
+            res_rej.append(lat)
+
     # -- goodput over the sell-out window (D11) ------------------------------
     initial = inventory_totals["initial"]
     sellout_t = None
@@ -113,6 +128,7 @@ def compute(
 
     return {
         "ttda": {"winners": _pcts(winners), "rejected": _pcts(rejected)},
+        "resolution": {"winners": _pcts(res_win), "rejected": _pcts(res_rej)},
         "goodput": {
             "sold_per_s": goodput,
             "window_s": window,
@@ -138,6 +154,33 @@ def compute(
         },
         "settling_time_s": settling,
         "abandon_count": len(abandons),
+    }
+
+
+def r8_status_stream(log: list) -> dict:
+    """R8 per-stream evaluation over the served log (design's saturation
+    criterion, D10/S6): the status endpoint is the new bottleneck iff
+    status-stream p99 in-server wait exceeds the booking-stream's, OR the
+    status stream consumes > 50% of worker capacity."""
+    served = [e for e in log if e[0] == "served" and len(e) >= 6]
+    status_w = [float(e[5]) for e in served if e[4] == Outcome.QUEUE_POSITION.value]
+    booking_w = [
+        float(e[5]) for e in served if e[4] in (Outcome.BOOKED.value, Outcome.SOLD_OUT.value)
+    ]
+    busy_status = sum(float(e[3]) for e in served if e[4] == Outcome.QUEUE_POSITION.value)
+    busy_total = sum(float(e[3]) for e in served)
+    p99_status = _pct(status_w, 0.99)
+    p99_booking = _pct(booking_w, 0.99)
+    share = busy_status / busy_total if busy_total else 0.0
+    saturated = (
+        p99_status is not None and p99_booking is not None and p99_status > p99_booking
+    ) or share > 0.5
+    return {
+        "status_requests": len(status_w),
+        "status_p99_wait_s": p99_status,
+        "booking_p99_wait_s": p99_booking,
+        "status_busy_share": share,
+        "status_is_new_bottleneck": saturated,
     }
 
 

@@ -74,6 +74,19 @@ def test_ttda_split_never_averaged():
     assert m["ttda"]["rejected"]["p99"] == 5.3
 
 
+def test_resolution_latency_starts_at_t0_for_pre_fire(D15=True):
+    """D15: u3 pre-fired at 25.0 (TTDA 5.3 s) but resolution latency runs
+    from max(25.0, T0=30) -> definitive 30.3 = 0.3 s. Post-T0 users are
+    identical under both quantities."""
+    m = golden()
+    assert m["resolution"]["winners"]["p99"] == pytest.approx(0.1)  # u0: same as ttda
+    rej = m["resolution"]["rejected"]
+    assert rej["n"] == 2
+    assert rej["p99"] == pytest.approx(0.3)  # u3: 5.3 s ttda -> 0.3 s resolution
+    # ttda unchanged and still reported — pre-firing visibly not free
+    assert m["ttda"]["rejected"]["p99"] == 5.3
+
+
 def test_goodput_over_sellout_window():
     g = golden()["goodput"]
     assert g["sellout_reached"] is True

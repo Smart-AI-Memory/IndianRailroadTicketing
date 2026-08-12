@@ -80,6 +80,7 @@ class _IntentState:
     patience: float = 0.0
     open_attempt: int | None = None  # token guarding stale responses
     attempt_counter: int = 0
+    t_token: float | None = None  # first queue-position answer (rung 4)
     done: bool = False
 
 
@@ -110,13 +111,30 @@ class ClientEngine:
         self._active = 0
         self._waitlist: list[_IntentState] = []
         self._states: list[_IntentState] = []
+        self._by_uid: dict[int, _IntentState] = {}
 
     # -- lifecycle -----------------------------------------------------------
     def start(self, intents: list[Intent]) -> None:
         for intent in intents:
             st = _IntentState(intent)
             self._states.append(st)
+            self._by_uid[intent.user_id] = st
             self.queue.schedule_at(intent.t_arrival, lambda st=st: self._on_arrival(st))
+
+    def push_definitive(self, user_id: int, outcome: Outcome) -> None:
+        """Server-push delivery (rung 4): the waiting room resolves tokens
+        server-side — booked when a token's turn completes, sold-out on
+        eviction — and pushes the definitive answer (the SMS/notification
+        channel real waiting rooms have). Cancels any open attempt; the
+        client stops polling because the intent is done."""
+        st = self._by_uid.get(user_id)
+        if st is None or st.done:
+            return
+        st.open_attempt = None  # any in-flight response is now stale
+        if st.t_first is None:  # pushed before the client ever began (rare)
+            st.t_first = self.clock.now()
+            self._active += 1  # keep _finish's slot bookkeeping balanced
+        self._definitive(st, outcome)
 
     def _on_arrival(self, st: _IntentState) -> None:
         if self.fidelity.open_loop_arrivals or self._active < self.cfg.closed_loop_users:
@@ -183,11 +201,18 @@ class ClientEngine:
                 self._retry_or_abandon(st)
             return
         if outcome is Outcome.QUEUE_POSITION:
-            if now - (st.t_first or now) > st.patience:
+            # a queue position is a PROGRESS signal: patience for the polling
+            # loop runs from token issuance, not from the first request —
+            # otherwise pre-fire campers quit the moment they get queued
+            if st.t_token is None:
+                st.t_token = now
+            if now - st.t_token > st.patience:
                 self._abandon(st)
-            else:  # poll status; polling is not a retry
+            else:  # poll status; polling is not a retry. Bots poll at their
+                # faster cadence (R3.9) — the signal P8's classifier reads.
                 self.queue.schedule_in(
-                    self.cfg.poll_interval, lambda: self._submit(st, is_poll=True)
+                    self.cfg.poll_interval * self._speed(st),
+                    lambda: self._submit(st, is_poll=True),
                 )
             return
         if outcome in DEFINITIVE:

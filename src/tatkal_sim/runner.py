@@ -75,6 +75,7 @@ class Arm:
     wcfg: WorkloadConfig = field(default_factory=lambda: OPERATING_WORKLOAD)
     variant: str = "fitted"  # knee-shape profile name (R2 acceptance)
     rung: int = 0  # cumulative ladder rung (D5); 0 = naive bare server
+    rung_params: object = None  # optional RungParams override
     out_of_order: bool = False  # R4/D5: labelled, never reported as a rung
 
 
@@ -88,8 +89,14 @@ def run_arm_once(arm: Arm, seed: int) -> dict:
     server = Server(clock, queue, streams, arm.fidelity, arm.scfg, arm.wcfg.t0, log=log)
     from tatkal_sim.strategies.base import build_rung  # local: avoids import cycle
 
-    service = build_rung(arm.rung, server, clock, queue)
+    service = build_rung(arm.rung, server, clock, queue, arm.rung_params)
     engine = ClientEngine(clock, queue, streams, arm.fidelity, arm.ccfg, arm.wcfg, service, log=log)
+    # wire push delivery (rung 4+): walk the middleware chain to the server
+    layer = service
+    while layer is not server:
+        if hasattr(layer, "bind_push"):
+            layer.bind_push(engine.push_definitive)
+        layer = getattr(layer, "inner", server)
     engine.start(intents)
     queue.run(max_events=5_000_000)
     server.inventory.assert_ok()  # invariants run on EVERY run (R3.4)
@@ -109,6 +116,34 @@ def sweep(arms: list[Arm], seeds: list[int]) -> dict[str, dict[int, dict]]:
     return {arm.name: {seed: run_arm_once(arm, seed) for seed in seeds} for arm in arms}
 
 
+def ladder_arm(
+    k: int,
+    *,
+    seats: int = 25,
+    ccfg: ClientConfig | None = None,
+    variant: str = "fitted",
+) -> Arm:
+    """Canonical Arm for ladder rung k (D5 composition in one place).
+
+    Sharding (rung 3's mechanism) is a ServerConfig change and applies to
+    every rung >= 3. Knee variants select the server profile (R2)."""
+    import dataclasses as dc
+
+    from tatkal_sim.measure.fitting import FIT_JSON, knee_variant, load_fit
+
+    scfg = knee_variant(variant, load_fit(FIT_JSON)["params"])
+    scfg = dc.replace(scfg, seats_per_pool=seats, sharded=(k >= 3))
+    suffix = "" if variant == "fitted" else f"-{variant}"
+    return Arm(
+        f"rung{k}{suffix}",
+        scfg,
+        wcfg=OPERATING_WORKLOAD,
+        ccfg=ccfg or ClientConfig(),
+        variant=variant,
+        rung=k,
+    )
+
+
 def metric_series(results: dict[int, dict], path: str) -> dict[int, float]:
     """Extract {seed: scalar} for a dotted metric path, e.g. 'ttda.winners.p99'."""
     out = {}
@@ -121,7 +156,14 @@ def metric_series(results: dict[int, dict], path: str) -> dict[int, float]:
 
 
 # ------------------------------------------------------------------ report
-HEADLINE_METRICS = ("ttda.winners.p99", "ttda.rejected.p99", "goodput.sold_per_s")
+# D15: the success bars bind resolution latency; TTDA stays reported as
+# the user-cost quantity (pre-firing is not free)
+HEADLINE_METRICS = (
+    "resolution.winners.p99",
+    "resolution.rejected.p99",
+    "ttda.winners.p99",
+    "goodput.sold_per_s",
+)
 GATE_A_METRICS = ("wasted_work_ratio", "settling_time_s", "fairness.bots_win_share")
 
 

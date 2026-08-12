@@ -251,36 +251,128 @@ throughput and on tail *direction*, conservative on tail *magnitude*
 valid — every arm runs on the same conservative model — and the knee
 variants (plateau/cliff) bracket the shape uncertainty per R2.
 
+## D14 — Gate A rulings; C=256 operationalization amended (chair, 2026-08-11)
+
+> **Parallel provenance:** a concurrent session on `main` independently
+> flagged both no-signal findings this ruling disposes of — settling
+> unmeasurable by construction and wasted-work never excited — from its
+> own spike-scale preview (`tools/run_p6_arms.py`, main commit d846b01).
+> Two independent measurements, one ruling; the flag is answered by
+> dispositions 2 and 3 below.
+
+
+**Date:** 2026-08-11 · **Decided by:** chair, on the rung-0 fitted-profile
+20-seed Gate A profile · **Status:** ratified — unblocks R4 arm runs
+
+**C=256 operationalization (amending D10/S5's realization).** Measurement
+showed "peak in-flight = 256 ± 5%" is unsatisfiable: congestion feedback
+makes peak in-flight bistable (sub-critical bursts stay ≤ ~180; anything
+past the knife-edge blows through to the 451 connection ceiling; at the
+edge, seeds swing 30↔398). Ruling: the operating point is realized as the
+**supercritical spike** — operating workload 2650 users (2500 t0-humans,
+150 bots, 30 pre-fire), binding check: **in-flight ≥ 256 sustained for
+≥ 1 s** at the calibration-analogue conn ceiling (450). Measured: 1.3–2.1 s
+sustained across seeds. The ratified *evaluation point* (deepest calibrated
+overload) is unchanged; only its workload realization is amended.
+
+**Gate A dispositions** (profile: F ≈ 5.1, wasted-work 0.0 with 47%
+hard-error rate, settling uncomputable 0/20):
+
+1. **Fairness — thresholded.** Scalar `F = bot win-share ÷ bot population
+   share` (rung-0 naive measures F ≈ 5.1). Success direction: reduce F
+   toward 1. Regression bound: F MUST NOT rise > 5% *relative* vs the
+   strong baseline — this makes R6's "no > 5% regression in fairness"
+   computable.
+2. **Wasted-work ratio — report-only** in v1. In the fitted regime
+   overload manifests as connection resets, not stale work; the metric
+   bites under knee variants and slow-service sensitivity runs, where it
+   is reported.
+3. **Settling time — report-only**, plus a workload amendment: a small
+   post-T0 `background` cohort (trickle after the spike) so recovery is
+   measurable at all; on the spike-only workload the run ends with the
+   spike and no 5 s quiet interval can exist.
+
+**Binds:** requirements R6 (Gate A items), workload.py OPERATING_WORKLOAD,
+tasks.md Gate A. R4 arm runs are now unblocked.
+
+## D15 — Success bars bind resolution latency; TTDA stays reported
+
+**Date:** 2026-08-11 · **Decided by:** chair, option (c) of the P6-flagged
+collision · **Status:** ratified — clarification, no threshold value changed
+
+**Problem.** R6's TTDA clock starts at the user's first request, and
+D10/S2 deliberately made pre-firing "not free" (clock from the first
+pre-T0 poll). Individually sound; jointly they conflate user-chosen
+pre-T0 camping (~20 s, untouchable by any mechanism — nothing can resolve
+before T0) with system latency. With ~30 pre-fire users among ~200
+winners, winners' p99 saturated at ~18.8 s for every arm — zero
+discriminating power, bar structurally unmeetable.
+
+**Ruling.** A derived quantity **resolution latency** = definitive
+outcome − max(first request, T0) — the clock starts when resolution
+becomes possible. The D11 success bars (p99 ≤ 34.2 ms for winners AND
+rejected independently; rejected ≤ winners) bind resolution latency.
+**TTDA from first request remains defined and reported** per population:
+pre-firing stays visibly not-free as a user-cost quantity.
+
+**Pre-registration defense.** The replaced operand was IDENTICAL across
+all arms (18.83 s), so the change cannot retroactively favor any
+mechanism; measured fresh, the new operand discriminates: winners' p99
+511 → 43 → 42 ms across rungs 0-2 (20 seeds), with rungs 1-2 honestly
+MISSING the 34.2 ms bar (~20% over).
+
+**Recorded finding.** The 34.2 ms bar sits ~4% above the physics floor
+for the winners population (200 seats × (hold+service) ≈ 33 ms through
+the lock): the 50× multiplier's derivation never considered
+inventory-drain physics. The value stands per pre-registration
+discipline; its near-floor strictness belongs in the write-up.
+
+**Binds:** requirements R6 (metric definitions + success criteria
+operand), measure/metrics.py, reports from P6 onward.
+
+## D16 — P7 model refinements: room opens at T0; patience from token
+
+**Date:** 2026-08-11 · **Decided by:** build-phase findings, recorded for
+chair visibility · **Status:** ratified by execution (matrix-consistent)
+
+Two client/room semantics fixed during P7, both found by failing tests:
+
+1. **The waiting room opens AT T0.** Pre-T0 requests pass through to the
+   server's "not open" path so the outcome matrix re-fires them at T0.
+   (Tokening them pushed NOT_OPEN as a definitive and killed pre-fire
+   intents outright.)
+2. **Queue-position patience runs from token issuance.** A queue position
+   is a progress signal; measuring patience from the first request made
+   pre-fire campers abandon the moment they were finally queued — camping
+   20 s then quitting on good news.
+
+**Binds:** strategies/waiting_room.py, model/users.py outcome matrix
+(QUEUE_POSITION branch).
+
+## D17 — v1 experiment concluded; results final
+
+**Date:** 2026-08-11 · **Decided by:** P9 evaluation under the ratified
+protocol · **Status:** final
+
+The full ladder (rungs 0–6) was evaluated at the D14 operating point
+across three knee variants with the ratified criteria (D8 values, D11
+populations, D15 operand), paired statistics (D6), and a labelled
+one-at-a-time sensitivity sweep. RESULTS.md is the graded record:
+
+- Rung 4 (waiting room) is the strongest arm and the only one to meet a
+  pre-registered bar (rejected p99 resolution latency).
+- Two honest negatives stand per D2: adaptive limiting regressed; the
+  bot classifier breaches the fairness guard against the held-out mimic
+  family.
+- Structural findings F5 (drain-speed classification blindness) and F6
+  (regime-dependent failure modes) carry to the write-up's
+  mechanism-design discussion.
+
+The requirements "Expected result" section carries the per-clause grade.
+v2 candidates remain as listed in "Explicitly deferred to v2". No further
+v1 arms may run against these criteria without a new decision entry.
+
 ## Open questions (no decision yet)
 
-- **Fairness threshold at Gate A** — the metric definition (seat share by
-  first-arrival cohort; bot win share vs population share) is fixed; the
-  pass/fail bar is not. Per D10, Gate A must also define the scalar
-  statistic and how "5% regression" is computed over the two quantities.
-
-- **Gate A: two of the three unthresholded metrics produce no signal at
-  the previewed workload shape** (flagged 2026-08-11 from the P6 preview
-  runner, `tools/run_p6_arms.py` — spike-scale workload, 10x operating
-  cohorts, 25 seats/pool, 20 seeds; NOT the canonical P7 workload).
-  Verified mechanisms on the rung-0 arm:
-  1. `settling_time_s` is **None by construction**: the last response
-     lands at T0+1.95 s and the run ends at T0+3.95 s, so the ratified
-     5 s sustain window (D8 parameters) can never fit inside the post-T0
-     traffic lifetime. The metric reports "never settled" for a system
-     that trivially recovered. Either the sustain parameter needs
-     rescaling to the sell-out timescale, the workload needs a post-spike
-     traffic tail long enough to carry the window, or the metric goes
-     report-only at Gate A.
-  2. `wasted_work_ratio` is **0 by no-signal, not by mechanism**: zero
-     client timeouts, zero stale responses, zero abandons — worst-case
-     response (~2 s) never approaches the client timeout, so the R3.6
-     wasted-work path is never excited. A threshold set from this profile
-     would bind a metric the workload cannot move. (Secondary note: the
-     stale-served join in `measure/metrics.py` matches on exact
-     `(timestamp, user_id)` equality between the server `served` and
-     client `stale_response` events — sound while responses are delivered
-     with zero delay, brittle if a network-latency stage is ever added.)
-  Chair input needed before Gate A: rescale/redefine these two, adjust
-  the P7 workload to excite them, or declare them report-only (D10 allows
-  it). The rung-0 profile that informs Gate A should be re-run on the
-  canonical P7 workload before any threshold is set.
+*(none — the P6 TTDA collision was resolved by D15; new questions get
+logged here)*
