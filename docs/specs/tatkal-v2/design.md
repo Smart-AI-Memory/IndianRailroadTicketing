@@ -1,9 +1,11 @@
 # tatkal-v2 — design
 
-**Status:** draft (2026-08-12) — awaiting chair review. Constants
-marked **PROPOSED** require registration by decision entry before any
-evaluated run (D1/D3 discipline). Population constants are already
-registered (D13) and are cited, not re-opened.
+**Status:** APPROVED (2026-08-12, D14) — all five design choices ruled
+as proposed; the constants marked **PROPOSED** below are now
+**registered** by D14 (windows, shared c_push grid, rung-2 M3 base,
+auto-redeem, two-clock reporting). Still owed before runs: fairness
+guard values (D5) and success bars with floor statements (D3).
+Population constants were registered earlier (D13).
 
 **Inputs:** requirements.md (ratified, D11); population-derivation.md
 (registered, D13); v1 design.md (the simulator being extended).
@@ -159,15 +161,9 @@ Two-phase inventory (auto-redeem is the M1 design consequence),
 adaptive bots, distributed load, per-train forecasting — all per D2.
 No new ML (R8): the v1 classifier is not run inside mechanism arms.
 
-## Design choices open for chair review
+## Design choices — RULED (D14)
 
-1. **W = 300 s, Q = 5 s, k = 4, H = 8 s** — the window constants
-   (PROPOSED above), each with its realized ratio.
-2. **c_push grid** {0, ¼, ½, 1, 2} × status_service_time, shared by
-   R3′ and the M1/M2 notification bursts.
-3. **M3 composition base** = rung 2 serving layer.
-4. **M1 auto-redeem** (no redemption window — keeps two-phase
-   inventory out per D2).
-5. **Two-clock reporting** as the resolution of deliberate-wait floors.
-
-Each lands as a decision entry; tasks.md follows once these are ruled.
+All five choices were ruled as proposed at the DC1–DC5 pass
+(2026-08-12): windows (W = 300 s, Q = 5 s, k = 4 / H = 8 s), the shared
+c_push grid, the rung-2 M3 base, M1 auto-redeem, and two-clock
+reporting are registered by D14. tasks.md follows.
