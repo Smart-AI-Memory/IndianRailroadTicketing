@@ -257,3 +257,30 @@ variants (plateau/cliff) bracket the shape uncertainty per R2.
   first-arrival cohort; bot win share vs population share) is fixed; the
   pass/fail bar is not. Per D10, Gate A must also define the scalar
   statistic and how "5% regression" is computed over the two quantities.
+
+- **Gate A: two of the three unthresholded metrics produce no signal at
+  the previewed workload shape** (flagged 2026-08-11 from the P6 preview
+  runner, `tools/run_p6_arms.py` — spike-scale workload, 10x operating
+  cohorts, 25 seats/pool, 20 seeds; NOT the canonical P7 workload).
+  Verified mechanisms on the rung-0 arm:
+  1. `settling_time_s` is **None by construction**: the last response
+     lands at T0+1.95 s and the run ends at T0+3.95 s, so the ratified
+     5 s sustain window (D8 parameters) can never fit inside the post-T0
+     traffic lifetime. The metric reports "never settled" for a system
+     that trivially recovered. Either the sustain parameter needs
+     rescaling to the sell-out timescale, the workload needs a post-spike
+     traffic tail long enough to carry the window, or the metric goes
+     report-only at Gate A.
+  2. `wasted_work_ratio` is **0 by no-signal, not by mechanism**: zero
+     client timeouts, zero stale responses, zero abandons — worst-case
+     response (~2 s) never approaches the client timeout, so the R3.6
+     wasted-work path is never excited. A threshold set from this profile
+     would bind a metric the workload cannot move. (Secondary note: the
+     stale-served join in `measure/metrics.py` matches on exact
+     `(timestamp, user_id)` equality between the server `served` and
+     client `stale_response` events — sound while responses are delivered
+     with zero delay, brittle if a network-latency stage is ever added.)
+  Chair input needed before Gate A: rescale/redefine these two, adjust
+  the P7 workload to excite them, or declare them report-only (D10 allows
+  it). The rung-0 profile that informs Gate A should be re-run on the
+  canonical P7 workload before any threshold is set.
