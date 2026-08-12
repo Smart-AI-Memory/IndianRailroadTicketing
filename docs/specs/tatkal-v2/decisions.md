@@ -341,6 +341,27 @@ final — evaluated runs may begin
 
 **Binds:** every V5/V6 evaluated run; V7's grading.
 
+## D18 — V7 grading rulings: P1 CI-evaluated; c=0 bar miss + floor amendment
+
+**Date:** 2026-08-12 · **Decided by:** chair (V7 grading pass) ·
+**Status:** final
+
+1. **P1/race guard: CI-evaluated, no breach.** The 1.05 guard is graded
+   on the registered paired-CI rule: race's excess-over-1 CI
+   [−0.010, +0.214] includes zero and the leak investigation found no
+   mechanism (the draw is uniform over active identities by
+   construction). P1 stands **confirmed**; the 1.090 point value is
+   recorded as sampling noise at 90 controllers.
+2. **M1/M2 combined post-event bar at c_push = 0: MISS as registered.**
+   The 3×-burst-floor bar is degenerate at c = 0 because the floor
+   derivation omitted the winner-redemption drain; per D3 the miss is
+   recorded, never adjusted. **Prospective amendment:** for any future
+   cell, the post-event floor is max(burst drain, winner-redemption
+   drain). The loser-clock bars, which pass by construction at c = 0,
+   are unaffected.
+
+**Binds:** RESULTS.md grading; any future M1/M2 cell's floor.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*
