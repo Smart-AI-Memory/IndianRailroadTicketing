@@ -34,22 +34,27 @@ defense.
 
 ## 2. Pre-registered success criteria (fitted variant, 20 seeds)
 
-| rung | winners p99 | rejected p99 | goodput | retry amp | criteria met |
-|---|---|---|---|---|---|
-| rung0 | 510.7 ms | 1721.8 ms | 335/s | 2.17 | 1/6 |
-| rung1 | 42.8 ms | 53.1 ms | 1733/s | 1.15 | 2/6 |
-| rung2 | 41.7 ms | 41.5 ms | 1795/s | 1.15 | 3/6 |
-| rung3 | 39.8 ms | 39.6 ms | 1838/s | 1.15 | 3/6 |
-| rung4 | 41.0 ms | 31.1 ms | 2079/s | 1.15 | 4/6 |
-| rung5 | 257.9 ms | 246.3 ms | 666/s | 1.15 | 3/6 |
-| rung6 | 234.1 ms | 275.0 ms | 650/s | 1.15 | 2/6 |
+| rung | winners p99 | rejected p99 | goodput | retry amp | fairness F | criteria met |
+|---|---|---|---|---|---|---|
+| rung0 | 510.7 ms | 1721.8 ms | 335/s | 2.17 | 5.25 | 1/6 |
+| rung1 | 42.8 ms | 53.1 ms | 1733/s | 1.15 | 5.25 | 2/6 |
+| rung2 | 41.7 ms | 41.5 ms | 1795/s | 1.15 | 5.25 | 3/6 |
+| rung3 | 39.8 ms | 39.6 ms | 1838/s | 1.15 | 5.25 | 3/6 |
+| rung4 | 41.0 ms | 31.1 ms | 2079/s | 1.15 | 5.21 | 4/6 |
+| rung5 | 257.9 ms | 246.3 ms | 666/s | 1.15 | 5.21 | 3/6 |
+| rung6 | 234.1 ms | 275.0 ms | 650/s | 1.15 | 2.65 | 2/6 |
+
+*(Retry amplification is 1.15 for every rung ≥ 1 because with hard
+errors eliminated it is carried entirely by pre-fire polling and T0
+re-fires — workload structure, mechanism-invariant by design.)*
 
 **No arm meets the winners bar (34.2 ms)** — it sits ~4% above the
 inventory-drain physics floor. **No arm meets the goodput guardrail**
 (3892 seats/s; ceiling arithmetic: 200 seats over the fastest observed
 drain gives ~2100/s — the guardrail constant, derived from steady-state
-calibration capacity, is unreachable at this inventory size; every
-mechanism arm still exceeds naive 5-6x). Rung 4's **rejected-bar MET is
+calibration capacity, is unreachable at this inventory size; the
+classical arms, rungs 1-4, exceed naive 5-6x; the adaptive-stack arms
+(rungs 5-6) reach only ~2x). Rung 4's **rejected-bar MET is
 a fragile median**: 31.1 <= 34.2 ms at 20 seeds, but the paired
 improvement vs rung 2 is NOT distinguishable (§3) and the bar flips in
 6 of 8 sensitivity cells (§4). Under the ratified decision rule the
@@ -57,16 +62,19 @@ bar-met may be reported; the *improvement claim* may not.
 
 ## 3. Ladder — marginal deltas and verdicts (paired, both families)
 
+(A CI including zero is labelled **not distinguishable** below; R6's
+pre-registered term for this outcome is "did not help".)
+
 | family | pair | rejected p99 delta [CI] | goodput delta [CI] |
 |---|---|---|---|
 | ladder | rung1vsrung0 | -1691.9ms [-3432.9,-1468.8] distinguishable | +1397.3/s [+1279.3,+1457.7] distinguishable |
 | ladder | rung2vsrung1 | -10.7ms [-16.1,-7.7] distinguishable | +130.4/s [+51.4,+192.3] distinguishable |
 | ladder | rung3vsrung2 | -2.0ms [-2.2,-1.8] distinguishable | +36.3/s [+32.3,+47.7] distinguishable |
-| ladder | rung4vsrung3 | -3.7ms [-12.2,+12.7] **did not help** | +294.3/s [+64.1,+379.6] distinguishable |
+| ladder | rung4vsrung3 | -3.7ms [-12.2,+12.7] **not distinguishable** | +294.3/s [+64.1,+379.6] distinguishable |
 | ladder | rung5vsrung4 | +193.9ms [+138.8,+243.8] distinguishable | -1456.6/s [-1732.4,-1112.2] distinguishable |
-| ladder | rung6vsrung5 | +20.5ms [+16.5,+26.2] distinguishable | -0.8/s [-7.8,+9.2] **did not help** |
+| ladder | rung6vsrung5 | +20.5ms [+16.5,+26.2] distinguishable | -0.8/s [-7.8,+9.2] **not distinguishable** |
 | baseline | rung3vsrung2 | -2.0ms [-2.2,-1.8] distinguishable | +36.3/s [+32.3,+47.7] distinguishable |
-| baseline | rung4vsrung2 | -6.0ms [-14.5,+10.7] **did not help** | +337.6/s [+89.5,+440.1] distinguishable |
+| baseline | rung4vsrung2 | -6.0ms [-14.5,+10.7] **not distinguishable** | +337.6/s [+89.5,+440.1] distinguishable |
 | baseline | rung5vsrung2 | +207.3ms [+179.4,+249.8] distinguishable | -1147.0/s [-1217.4,-1104.6] distinguishable |
 | baseline | rung6vsrung2 | +233.8ms [+200.4,+279.4] distinguishable | -1152.8/s [-1220.2,-1082.2] distinguishable |
 
@@ -97,10 +105,11 @@ as corner-dependent, not general. Two structural discoveries:
   R8's dark corner realized: on a congestion-collapsing backend the
   status endpoint IS the fatal bottleneck, and fast-fail without a room
   is the better mechanism there.
-- **Retry-after-reject** (p_retry=0.3) mechanically inflates rejected
-  resolution latency for every arm (the metric runs to the FINAL
-  definitive across the retry chain) — the bar is not designed for
-  disbelieving users; noted for v2 metric design.
+- **Retry-after-reject** (p_retry=0.3) is **horizon-censored** — both
+  arms report the identical 3502.0 ms because the metric runs to the
+  final definitive across the retry/backoff chain, which dominates any
+  mechanism difference. The cell is *uninformative*, not a "no"; noted
+  for v2 metric design.
 
 ## 5. Fairness (R7.1) — from the P8 evaluation
 
@@ -134,12 +143,13 @@ clients poll. Antigravity's hypothesis: **partially confirmed**.
   53 ms. Most of the achievable gain, from the simplest mechanism — as R5
   predicted when it made "bounded + FIFO + fast-fail" the bar.
 - **F2 — The waiting room is the strongest classical arm — on goodput.**
-  Its +338 seats/s over the strong baseline is the ladder's only
-  distinguishable top-rung improvement (CI strictly positive). Its
-  rejected-bar MET (31.1 ms ≤ 34.2 ms median) is real but fragile: the
-  paired latency improvement is not distinguishable, and the bar flips in
-  6 of 8 sensitivity cells — including a catastrophic reversal under the
-  cliff server, where its own status stream strangles the drain. Winners'
+  Its +338 seats/s over the strong baseline is the ladder's largest
+  distinguishable improvement above that baseline (sharding's +36/s is
+  also distinguishable, an order of magnitude smaller). Its rejected-bar
+  attainment is **inconclusive** (median below the bar; median CI
+  [16.9, 54.0] ms spans it; paired improvement not distinguishable; 6 of
+  8 sensitivity cells fail — including a catastrophic reversal under the
+  cliff server, where its own status stream strangles the drain). Winners'
   p99 41 ms misses the bar, which sits ~4% above the inventory-drain
   physics floor (~33 ms; D15 finding).
 - **F3 — Adaptive limiting is a negative result.** The AIMD swap (rung 5)
@@ -173,8 +183,8 @@ The spec pre-stated (requirements "Expected result"):
 - **"Classical admission control … recovers much of the lost
   goodput/stability"** — **CONFIRMED**: rung 1 alone recovers 5× goodput
   and eliminates hard errors; the waiting room adds a distinguishable
-  further goodput gain and a bar-meeting (though fragile and
-  corner-dependent) rejected-answer latency.
+  further goodput gain and the fastest rejected-answer latency
+  measured (bar attainment inconclusive per §2).
 - **"Adaptive limiting provides a smaller additional improvement"** —
   **REFUTED, in the honest direction**: it provided a large *regression*,
   not a small improvement. A negative result, reportable per D2.
@@ -195,27 +205,34 @@ scarcity-allocation problem (requirements "Honest framing"):
 - Every mechanism that improved latency did so by *ordering* the race,
   not by changing its nature: FIFO admission, tokens, eviction. The
   distributional outcome — who wins — remained a function of arrival
-  timing at every classical rung (F ≈ 5–6.7 untouched through rung 4).
+  timing at every classical rung (F ≈ 5.2 at every rung through 5 on the evaluation family — §2 table —
+  and 5.2–6.7 across families, §5).
 - Fairness moved only when two conditions held at once: a mechanism that
   *lengthens the contest* (paced drain) **and** automation that behaves
   unlike humans. F5 shows the first condition is structural: no
   classifier can act inside a contest shorter than the population's
   arrival spread; F4 shows the second is adversarial and will erode as
   bots converge on human behaviour.
-- The implication is the round table's original escalation: durable
-  fairness in same-instant scarcity allocation points at **mechanism
-  design** — pre-registration windows, lotteries over a qualification
-  window, or deliberately paced drains — rather than detection. Those
-  are policy changes outside a prototype's authority (and outside v1
-  scope by design); the v1 evidence is that engineering alone converts a
-  latency contest into an *orderly* latency contest, not into a fair
-  allocation.
+- The round table's original escalation therefore stands as the open
+  question: whether **mechanism design** — pre-registration windows,
+  lotteries over a qualification window, deliberately paced drains —
+  produces durable fairness is an **untested hypothesis**: none of those
+  mechanisms were simulated in v1, and nothing here demonstrates they
+  work. What v1 *does* license: engineering alone converted a latency
+  contest into an orderly latency contest, not into a fair allocation —
+  and any fairness intervention needs the contest to last longer than
+  the population's arrival spread (F5). They are the first v2
+  candidates for exactly that reason.
 
 ## 10. Limitations
 
 - The server model is conservative on tail magnitude (~0.6–0.7× measured
-  at high C; chair-accepted deviations, D13); knee variants bracket the
-  shape uncertainty and the headline survives all three (§4).
+  at high C; chair-accepted deviations, D13). The knee variants bracket
+  the shape uncertainty and show the headline is **variant-dependent**
+  (§4): plateau clean, fitted inconclusive, cliff a catastrophic
+  reversal. (An earlier draft claimed the headline "survives all three"
+  — corrected at the results review; the drafting lesson is recorded in
+  the review thread.)
 - One machine, one calibrated engine lineage (Postgres semantics; the
   SQLite run is withdrawn provenance). Absolute numbers are
   laptop-specific; directions and orderings are the transferable claims.
@@ -228,12 +245,18 @@ scarcity-allocation problem (requirements "Honest framing"):
   arithmetic; see §2's guardrail discussion.
 - Sensitivity sweep is one-at-a-time (10 seeds/cell, labelled), not a
   full factorial.
+- ~20 paired comparisons are reported with no multiplicity correction;
+  isolated marginal results should be read cautiously.
+- Asymmetric costing: status polling is fully costed on the shared
+  worker pool, push delivery is modelled cost-free — whether rung 4
+  retains any distinguishable advantage under realistically costed push
+  is an open v2 question (raised by the Antigravity seat).
 
 ## 11. Verdict
 
 v1 answers its framing question — *which mechanisms actually improve
 behaviour during a realistic scarcity spike, and by how much* — with
-pre-registered criteria, paired statistics, honest negatives, and one
-bar met. The experiment is concluded; v2 candidates (real distributed
+pre-registered criteria, paired statistics, and honest negatives — with
+no bar claimably met, and the near-misses honestly bounded. The experiment is concluded; v2 candidates (real distributed
 load, two-phase inventory, adversarial co-evolution, mechanism-design
 simulations) are listed in requirements "Explicitly deferred to v2".
