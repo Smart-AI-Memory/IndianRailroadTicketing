@@ -96,6 +96,7 @@ class ClientEngine:
         client_cfg: ClientConfig,
         workload_cfg: WorkloadConfig,
         service: Service,
+        log: list[LogEntry] | None = None,
     ) -> None:
         self.clock = clock
         self.queue = queue
@@ -105,7 +106,7 @@ class ClientEngine:
         self.service = service
         self.retry_rng = streams.get("retry")
         self.abandon_rng = streams.get("abandon")
-        self.log: list[LogEntry] = []
+        self.log: list[LogEntry] = log if log is not None else []
         self._active = 0
         self._waitlist: list[_IntentState] = []
         self._states: list[_IntentState] = []
@@ -155,6 +156,11 @@ class ClientEngine:
                 st.open_attempt = None
                 self.log.append(("response", self.clock.now(), st.intent.user_id, outcome.value))
                 self._on_outcome(st, outcome)
+            else:
+                # late answer to a closed attempt: dropped here, but LOGGED —
+                # wasted-work attribution (R3.6 metric) pairs these with the
+                # server's "served" entries at the same (t, uid)
+                self.log.append(("stale_response", self.clock.now(), st.intent.user_id))
 
         self.service.submit(st.intent.user_id, st.intent.pool, respond)
         timeout = self.cfg.timeout_s * self._speed(st)

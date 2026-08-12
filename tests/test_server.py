@@ -127,6 +127,39 @@ def test_nonatomic_toggle_breaks_invariants():
         srv.inventory.assert_ok()
 
 
+def test_no_barging_past_the_accept_queue():
+    """A new arrival must not jump into a just-freed worker slot while
+    earlier requests wait in the accept queue (closed-loop clients would
+    otherwise starve queued firsts — found via the P4 calibration replica)."""
+    from tatkal_sim.core import Clock, EventQueue, RngStreams
+    from tatkal_sim.model.server import Server
+
+    clock, queue = Clock(), None
+    queue = EventQueue(clock)
+    srv = Server(
+        clock,
+        queue,
+        RngStreams(1),
+        NO_TAIL,
+        ServerConfig(workers=1, accept_queue=10, conn_limit=100, app_sigma=0.0, seats_per_pool=100),
+        t0=0.0,
+    )
+    order = []
+
+    def make_respond(tag, resubmit=False):
+        def respond(outcome):
+            order.append(tag)
+            if resubmit:  # closed-loop: fire again immediately on response
+                srv.submit(99, (1, "AC", "D0"), make_respond(f"{tag}-next"))
+
+        return respond
+
+    queue.schedule_at(0.0, lambda: srv.submit(1, (1, "AC", "D0"), make_respond("A", True)))
+    queue.schedule_at(0.0, lambda: srv.submit(2, (1, "AC", "D0"), make_respond("B")))
+    queue.run(max_events=10_000)
+    assert order.index("B") < order.index("A-next")  # queued B beats A's resubmit
+
+
 # -- P3 exit: unmitigated end-to-end at operating load -----------------------
 def test_operating_load_end_to_end_rung0_shaped():
     """No admission layer = rung-0-shaped. Every user must end resolved

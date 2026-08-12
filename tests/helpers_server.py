@@ -71,8 +71,9 @@ def server_world(
     queue = EventQueue(clock)
     streams = RngStreams(seed)
     intents = generate_intents(wcfg, fidelity, streams)
-    server = Server(clock, queue, streams, fidelity, scfg, wcfg.t0)
-    engine = ClientEngine(clock, queue, streams, fidelity, ccfg, wcfg, server)
+    log: list = []  # shared: engine and server interleave into one stream
+    server = Server(clock, queue, streams, fidelity, scfg, wcfg.t0, log=log)
+    engine = ClientEngine(clock, queue, streams, fidelity, ccfg, wcfg, server, log=log)
     engine.start(intents)
     queue.run(max_events=max_events)
     return intents, engine, server

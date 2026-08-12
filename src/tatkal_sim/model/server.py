@@ -55,6 +55,20 @@ class ServerConfig:
     tail_p: float = 0.02  # heavy-tail mixture (R3.7): P(extra draw)
     tail_mean: float = 0.010  # exponential extra, mean 10 ms
     lock_hold: float = 0.0002  # fixed hold inside the lock (fit tunes it)
+    # App-server congestion (P4 model extension, flagged to chair): effective
+    # app_time scales by (1 + congestion_k * active_conns). This is the
+    # app-tier component the sharded8 control identified — the calibrated
+    # system's throughput DECLINES with concurrency (GIL/thread scheduling),
+    # which no fixed-service-time queue can reproduce. Default 0: inert
+    # everywhere except calibration-fitted profiles.
+    congestion_k: float = 0.0
+    congestion_gamma: float = 1.0  # factor = 1 + k * conns**gamma (sublinear GIL shape)
+    # Hold-stall (P4 refinement round, chair-directed): a rare long stall
+    # drawn INSIDE the lock hold. A stalled writer blocks every queued
+    # waiter — the GIL-convoy burstiness the measured p99 S-curve carries.
+    # Zero by default: inert outside calibration-fitted profiles.
+    hold_stall_p: float = 0.0
+    hold_stall_mean: float = 0.0
     seats_per_pool: int = 50
     sharded: bool = False
     assumed_client_timeout: float = 2.0  # wasted_work-OFF shedding horizon
@@ -77,9 +91,11 @@ class Server:
         fidelity: FidelityConfig,
         cfg: ServerConfig,
         t0: float,
+        log: list | None = None,
     ) -> None:
         self.clock, self.queue = clock, queue
         self.fidelity, self.cfg, self.t0 = fidelity, cfg, t0
+        self.log = log if log is not None else []  # shared with the engine
         self.rng = streams.get("service")
         self.inventory = Inventory(cfg.seats_per_pool, t0)
         self._locks: dict[Pool, FifoLock] = {}
@@ -106,8 +122,14 @@ class Server:
 
     def _app_time(self) -> float:
         t = self.rng.lognormvariate(self.cfg.app_mu, self.cfg.app_sigma)
-        if self.fidelity.heavy_tail_service and self.rng.random() < self.cfg.tail_p:
+        if (
+            self.fidelity.heavy_tail_service
+            and self.cfg.tail_mean > 0
+            and self.rng.random() < self.cfg.tail_p
+        ):
             t += self.rng.expovariate(1.0 / self.cfg.tail_mean)
+        if self.cfg.congestion_k:
+            t *= 1.0 + self.cfg.congestion_k * self._conns**self.cfg.congestion_gamma
         return t
 
     # -- Service protocol ----------------------------------------------------
@@ -118,7 +140,10 @@ class Server:
             self.queue.schedule_in(0.0, lambda: respond(Outcome.HARD_ERROR))
             return
         self._conns += 1
-        if not self._bounded() or self._busy < self.cfg.workers:
+        # fast path only when NO ONE is already waiting: a new arrival must
+        # not barge past the accept queue into a just-freed worker slot
+        # (closed-loop clients would otherwise starve queued requests)
+        if not self._bounded() or (self._busy < self.cfg.workers and not self._accept):
             self._start(req)
         elif len(self._accept) < self.cfg.accept_queue:
             self._accept.append(req)  # bounded FIFO
@@ -163,27 +188,36 @@ class Server:
         lock.acquire(self.queue, lambda: self._hold(req, lock, t_service_start))
 
     def _hold(self, req: _Req, lock: FifoLock, t_service_start: float) -> None:
-        self.queue.schedule_in(
-            self.cfg.lock_hold, lambda: self._complete(req, lock, t_service_start)
-        )
+        hold = self.cfg.lock_hold
+        if self.cfg.hold_stall_mean > 0 and self.rng.random() < self.cfg.hold_stall_p:
+            # convoy: this stall is served to every waiter queued behind it
+            hold += self.rng.expovariate(1.0 / self.cfg.hold_stall_mean)
+        self.queue.schedule_in(hold, lambda: self._complete(req, lock, t_service_start))
 
     def _complete(self, req: _Req, lock: FifoLock, t_service_start: float) -> None:
         booked = self.inventory.try_book(req.pool, self.clock.now())
+        if booked:
+            self.log.append(("sold", self.clock.now(), req.user_id, req.pool))
         lock.release(self.queue)
         self._finish(req, Outcome.BOOKED if booked else Outcome.SOLD_OUT, t_service_start)
 
     def _complete_nonatomic(self, req: _Req, snapshot: int, t_service_start: float) -> None:
         if snapshot > 0:
             self.inventory.write_nonatomic(req.pool, snapshot, self.clock.now())
+            self.log.append(("sold", self.clock.now(), req.user_id, req.pool))
             outcome = Outcome.BOOKED
         else:
             outcome = Outcome.SOLD_OUT
         self._finish(req, outcome, t_service_start)
 
     def _finish(self, req: _Req, outcome: Outcome, t_service_start: float) -> None:
-        self.busy_seconds += self.clock.now() - t_service_start
+        busy = self.clock.now() - t_service_start
+        self.busy_seconds += busy
         self._busy -= 1
         self._conns -= 1
+        # served BEFORE respond: metrics pair a served entry with a
+        # stale_response at the same (t, uid) to attribute wasted work
+        self.log.append(("served", self.clock.now(), req.user_id, repr(busy), outcome.value))
         req.respond(outcome)
         self._pull_next()
 
