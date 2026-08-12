@@ -218,6 +218,39 @@ decision standing between P5 and the first R4 arm run.
 **Binds:** design.md (status: approved), tasks.md (status: approved,
 ladder active).
 
+## D13 — P4 fit: miss path invoked; one refinement round; best-of accepted
+
+**Date:** 2026-08-11 · **Decided by:** chair (miss-path ruling), executed
+per D10/S8 protocol · **Status:** ratified
+
+The round-1 fit (congestion model: `app_time × (1 + k·conns^γ)`, fitted
+W=2, service 0.077 ms, k=0.24, γ=0.67, hold 0.09 ms, 1% × 5 ms app-tail)
+reproduced the throughput curve within ±25% at 6 of 9 levels and the
+qualitative shape everywhere, but missed the p99 band at 5 levels — the
+measured mid-range tails carry Python-scheduler burstiness (p99/p50 up to
+25×) that a clean FIFO model does not contain. Per the predeclared miss
+path the chair directed **one refinement round**: a hold-stall mechanism
+(rare stall inside the lock hold, blocking the queue behind it) plus
+`sigma` freed as a fit parameter.
+
+**The refinement made the fit worse** (final loss 0.611 vs 0.370; 9 vs 7
+miss levels): the 1 s grid-search duration systematically penalises stall
+configurations, driving the search into a no-tail corner that generalises
+badly at the 2 s evaluation. An honest negative — recorded, not hidden.
+
+**Ruling executed: best-of = round 1.** Its residual misses are
+chair-accepted deviations, recorded in `calibration/fit-2026-08-11.json`
+(`meta.chair_accepted_deviations`). The hold-stall mechanism stays in the
+model (inert in the fitted profile) for future sensitivity work. Two
+model extensions are hereby part of the server model: `congestion_k/γ`
+and `hold_stall_p/mean` — both default-zero outside calibrated profiles.
+
+**Consequence for interpretation:** the fitted profile is faithful on
+throughput and on tail *direction*, conservative on tail *magnitude*
+(model p99 ≈ 0.6–0.7× measured at high C). Mechanism comparisons remain
+valid — every arm runs on the same conservative model — and the knee
+variants (plateau/cliff) bracket the shape uncertainty per R2.
+
 ## Open questions (no decision yet)
 
 - **Fairness threshold at Gate A** — the metric definition (seat share by
