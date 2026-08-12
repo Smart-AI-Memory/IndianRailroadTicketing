@@ -97,6 +97,32 @@ The comparison across the three is the finding.
 
 **Binds:** v3 requirements R-scope for M2 mitigation.
 
+## D6 — requirements judgment calls ruled; grids registered
+
+**Date:** 2026-08-12 · **Decided by:** chair (requirements
+ratification pass RQ1–RQ4) · **Status:** final
+
+1. **Deposit arm is accounting-only (RQ1).** Under the D3 fixed
+   repertoire it reports abuser expected net utility and the d*
+   threshold per prevalence, computed analytically from the registered
+   utility model — seat value normalized to 1, losers refunded. The
+   behavioural budget variant is ruled out for v3 (no D3 amendment).
+2. **Honest-user cost metrics are binding (RQ2).** Every mitigation
+   arm registers a fairness metric AND an honest-user cost metric
+   before its guards; out-of-model exclusions are named as
+   unmeasurable, never quantified.
+3. **Verify-by-draw (RQ3).** Only identities whose verification
+   completes by the draw enter it; later verifications fall to
+   post-draw fast-fail; verification is measured as its own load
+   stream; honest draw-misses count in the exclusion metric.
+4. **Constants registered (RQ4):** c_verify ∈ {0, ½, 1, 2} × status
+   check (zero cell = unmitigated M2 continuity anchor); W_b = 300 s
+   (carrying v2's W); p_retry ∈ {0, 0.3, 0.7, 1.0} (zero cell = v2 M3
+   anchor); deposit utility model as in (1). Per D1 discipline none
+   may be adjusted after runs; misses are reported.
+
+**Binds:** requirements.md R2/R4; every dependent cell.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*

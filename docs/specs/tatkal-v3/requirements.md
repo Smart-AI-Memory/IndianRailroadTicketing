@@ -1,8 +1,11 @@
 # tatkal-v3 — requirements
 
-**Status:** draft (2026-08-12) — awaiting chair ratification. Every
-numeric constant is carried with its source named or explicitly marked
-**UNSET** (fixed by decision entry before any dependent run, per D1).
+**Status:** draft as amended by D6 (2026-08-12) — the ratification
+pass is ruled (deposit accounting-only, cost metrics binding,
+verify-by-draw, grids registered); full-document ratification pending
+chair sign-off. Every numeric constant is carried with its source
+named, registered by D6, or explicitly marked **UNSET** (fixed by
+decision entry before any dependent run, per D1).
 
 **Purpose:** determine which way of pricing identities reclaims
 lottery parity under abuse and at what cost to honest users; complete
@@ -74,9 +77,10 @@ discipline.
 
 Every identity entering the pool triggers a verification work item on
 the **shared worker pool** (the D14.2 costing pattern): cost factor
-`c_verify` × status check, `c_verify` **UNSET** (grid registered
-before runs; the verification stampede is itself a spike surface and
-MUST be measured as its own load stream).
+`c_verify` × status check, **grid registered (D6.4): {0, ½, 1, 2}**,
+the zero cell being the unmitigated-M2 continuity anchor. The
+verification stampede is itself a spike surface and is measured as its
+own load stream (D6.3).
 
 - Only identities whose verification completes by the draw enter it;
   later verifications fall through to post-draw fast-fail. The
@@ -99,11 +103,10 @@ entries.
   the abuse-economics statement — at deposit d and prevalence p, an
   abuser's expected net utility per draw — and the threshold d* where
   abuse becomes net-negative.
-- **Optional behavioural variant (needs a chair entry per D3):** a
-  static, pre-registered abuse budget B per abuser, entries =
-  min(m, floor(B/d)). Not adaptation — a fixed budget constraint —
-  but it adds a population parameter and therefore requires a D3
-  amendment entry before it may run. Flagged as an open decision.
+- **Behavioural budget variant: ruled OUT for v3 (D6.1).** The arm is
+  accounting-only; the registered utility model (D6.4) is seat value
+  normalized to 1 with losers refunded, and d* is computed
+  analytically per prevalence — no sweep, no population change.
 - Honest-user cost metric: deposit friction is reported qualitatively
   (a real deposit excludes the unbanked; the simulation cannot price
   this and MUST NOT pretend to — honest-framing item).
@@ -111,8 +114,8 @@ entries.
 ### R2.3 — registration-bound arm (enrollment-priced; M1×M2 hybrid)
 
 Only identities registered during a pre-window [T0 − W_b, T0) may
-enter the draw (M1's registration machinery over M2's pool); W_b
-**UNSET** (candidate: carry W = 300 s).
+enter the draw (M1's registration machinery over M2's pool);
+**W_b = 300 s registered (D6.4)**, carrying v2's W.
 
 - Registration one-shots are costed as in M1 (v2 R2.1 carry);
   abusers must pre-register all m identities.
@@ -138,9 +141,9 @@ D14.2 c_push grid {0, ¼, ½, 1, 2} × status check.
 
 ## R4 — M3 retry-model sensitivity (D2.3)
 
-M3 re-run over a `p_retry_after_reject` grid, **UNSET** (candidate:
-{0, 0.3, 0.7, 1.0}; the 0 cell MUST be the v2 cell, reproduced
-bit-identically as a third anchor).
+M3 re-run over the `p_retry_after_reject` grid **registered (D6.4):
+{0, 0.3, 0.7, 1.0}** — the 0 cell MUST be the v2 cell, reproduced
+bit-identically as the third anchor.
 
 - Measured per cell: seats sold (inventory recovery), whole-run and
   per-tranche F-ratio, retry amplification per tranche, and the
