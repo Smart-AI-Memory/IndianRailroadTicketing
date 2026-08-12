@@ -25,6 +25,18 @@ def test_trivial_workload_actually_ran():
     assert float(r["final_time"]) > 0.0
 
 
+def test_full_world_runs_byte_identical():
+    """R1 at the P2 level: workload + client engine + stub service, same
+    seed -> identical raw event logs (the strongest artifact we have until
+    P5's metrics JSON)."""
+    from tests.conftest import run_world
+
+    log1 = run_world(seed=99).engine.log
+    log2 = run_world(seed=99).engine.log
+    assert repr(log1) == repr(log2)
+    assert repr(log1) != repr(run_world(seed=100).engine.log)
+
+
 def test_digest_stability_against_key_order():
     r = run_trivial(3)
     shuffled = dict(reversed(list(r.items())))
