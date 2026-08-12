@@ -160,6 +160,27 @@ class Server:
             )
         )
 
+    def submit_light_at(
+        self,
+        user_id: int,
+        outcome: Outcome,
+        respond: Callable[[Outcome], None],
+        cost_factor: float,
+    ) -> None:
+        """v2: light request at an explicit cost factor (costed push /
+        registration work, decisions.md D6/D14.2). Same gauntlet as
+        submit_light; additive — v1 paths never call it."""
+        self._submit_req(
+            _Req(
+                user_id,
+                (0, "push", "-"),
+                respond,
+                self.clock.now(),
+                light_outcome=outcome,
+                cost_factor=cost_factor,
+            )
+        )
+
     def _submit_req(self, req: _Req) -> None:
         respond = req.respond
         if self._bounded() and self._conns >= self.cfg.conn_limit:
