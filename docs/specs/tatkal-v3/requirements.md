@@ -1,11 +1,9 @@
 # tatkal-v3 — requirements
 
-**Status:** draft as amended by D6 (2026-08-12) — the ratification
-pass is ruled (deposit accounting-only, cost metrics binding,
-verify-by-draw, grids registered); full-document ratification pending
-chair sign-off. Every numeric constant is carried with its source
-named, registered by D6, or explicitly marked **UNSET** (fixed by
-decision entry before any dependent run, per D1).
+**Status:** RATIFIED (2026-08-12, D7) — as amended by the D6 rulings
+(deposit accounting-only, cost metrics binding, verify-by-draw, grids
+registered). Every numeric constant is carried with its source named
+or registered by D6; none remain UNSET at requirements level.
 
 **Purpose:** determine which way of pricing identities reclaims
 lottery parity under abuse and at what cost to honest users; complete

@@ -123,6 +123,19 @@ ratification pass RQ1–RQ4) · **Status:** final
 
 **Binds:** requirements.md R2/R4; every dependent cell.
 
+## D7 — v3 requirements ratified in full
+
+**Date:** 2026-08-12 · **Decided by:** chair · **Status:** final
+
+requirements.md, as drafted from D1–D5 and amended by the D6 rulings,
+is **ratified in full**. R1–R8, the deferral list, the safety boundary,
+honest framing, and the expected-result hypothesis are binding. The
+design phase opens; the design document owes the chair: the M2r entry
+semantics, the deposit forfeiture accounting, the verification work
+model, and the costed-burst cell list checked against D4.1.
+
+**Binds:** requirements.md (status: ratified); design-phase sequencing.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*
