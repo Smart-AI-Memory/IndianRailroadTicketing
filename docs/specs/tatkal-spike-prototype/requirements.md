@@ -770,6 +770,14 @@ A negative result for any mechanism is a valid outcome if the experiment
 demonstrates that the mechanism did not provide a statistically meaningful
 improvement over the appropriate baseline.
 
+> **Graded** (P9 evaluation, 2026-08-11 — see RESULTS.md §8): admission
+> control + waiting room **confirmed** (stronger than hypothesized; the
+> only pre-registered bar met); adaptive limiting **refuted honestly**
+> (a regression, not a small improvement); ML-on-fairness **confirmed
+> with a measured limit** (halves F against machine-shaped automation
+> including a held-out family; breaches the guard against mimics). Per
+> D2, this graded outcome is a successful experiment.
+
 ---
 
 # Definition of done for the requirements phase

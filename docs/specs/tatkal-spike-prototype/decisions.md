@@ -341,6 +341,29 @@ Two client/room semantics fixed during P7, both found by failing tests:
 **Binds:** strategies/waiting_room.py, model/users.py outcome matrix
 (QUEUE_POSITION branch).
 
+## D17 — v1 experiment concluded; results final
+
+**Date:** 2026-08-11 · **Decided by:** P9 evaluation under the ratified
+protocol · **Status:** final
+
+The full ladder (rungs 0–6) was evaluated at the D14 operating point
+across three knee variants with the ratified criteria (D8 values, D11
+populations, D15 operand), paired statistics (D6), and a labelled
+one-at-a-time sensitivity sweep. RESULTS.md is the graded record:
+
+- Rung 4 (waiting room) is the strongest arm and the only one to meet a
+  pre-registered bar (rejected p99 resolution latency).
+- Two honest negatives stand per D2: adaptive limiting regressed; the
+  bot classifier breaches the fairness guard against the held-out mimic
+  family.
+- Structural findings F5 (drain-speed classification blindness) and F6
+  (regime-dependent failure modes) carry to the write-up's
+  mechanism-design discussion.
+
+The requirements "Expected result" section carries the per-clause grade.
+v2 candidates remain as listed in "Explicitly deferred to v2". No further
+v1 arms may run against these criteria without a new decision entry.
+
 ## Open questions (no decision yet)
 
 *(none — the P6 TTDA collision was resolved by D15; new questions get
