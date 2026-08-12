@@ -165,3 +165,24 @@ recommendation, who is really deciding?
 - `decisions.md` — every ruling, dated, append-only, with rationale.
 - `RESULTS.md` — the graded outcome, including both negatives.
 - `reports/` — the evidence each ruling was later tested against.
+
+---
+
+## Q7 — Postscript: the results review itself (added after the fact)
+
+The round table reviewed RESULTS.md the way it had reviewed the spec. Three
+things a student should study in the thread
+(`q-tatkal-results-review-001`):
+
+1. **A moderator data injection settled an argument**: the seats disputed
+   how fragile the "bar met" was; a bootstrap CI on the 20-seed median —
+   [16.9, 54.0] ms around a 34.2 ms bar, 9/20 seeds over — forced the
+   downgrade to *inconclusive*. Compute, don't adjudicate wording.
+2. **The document's worst defect was a drafting race**: prose written in a
+   skeleton before the data landed ("the headline survives all three
+   variants") contradicted the table filled in later. Reviewers caught
+   what the author's own tests could not.
+3. **The chair diverged from a recommendation for the first time** (kept
+   the ML grading as-is against the moderator's "sharpen") — the live
+   answer to Q6's anchoring question. Evaluate: does one divergence
+   settle it? What ruling would you have made, and on what evidence?
