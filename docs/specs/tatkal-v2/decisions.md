@@ -279,6 +279,19 @@ statement (D3).
 **Binds:** design.md (status: approved); tasks.md structure; every
 evaluated run's window/costing configuration.
 
+## D15 — tasks.md approved; ladder active
+
+**Date:** 2026-08-12 · **Decided by:** chair · **Status:** final
+
+tasks.md (V0–V7 with Gate B) is **approved**; the ladder is active and
+binding as gated. V0 begins immediately. Gate B remains the chair
+decision standing between implementation (V0–V4) and every evaluated
+run (V5–V6); the V0.2 reproduction tolerance is the one chair
+registration inside the build phases.
+
+**Binds:** tasks.md (status: approved, ladder active); build-phase
+sequencing.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*

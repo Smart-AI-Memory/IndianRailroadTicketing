@@ -1,7 +1,7 @@
 # tatkal-v2 — tasks
 
-**Status:** draft (2026-08-12) — awaiting chair approval; ladder
-activates on sign-off by decision entry.
+**Status:** approved — ladder active (chair sign-off 2026-08-12,
+decisions.md D15).
 
 **Basis:** requirements.md (ratified, D11), design.md (approved, D14),
 population-derivation.md (registered, D13), decisions.md D1–D14.
