@@ -1,6 +1,7 @@
 # tatkal-spike-prototype — requirements
 
-**Status:** draft — updated for review (2026-08-11)
+**Status:** active — requirements ratified (2026-08-11: calibration constants
+and primary metric fixed by chair; see R6)
 
 **Purpose:** defensible systems experiment for evaluating traffic-management
 mechanisms under a realistic Tatkal-style scarcity spike.
@@ -180,7 +181,7 @@ Findings:
    and shows that at C=64 roughly half the queueing is the row lock and
    the rest is app-server capacity.
 
-Constants measured (fixing them is R6 step 2 and remains a chair decision):
+Constants measured (ratified as fixed by the chair, 2026-08-11 — see R6):
 
 - `N_knee` = 2 — but the knee is a region: C=2–8 all sit within 15% of peak.
 - `C_peak` = 4865 ops/s (median of 20 reps; range 4674–5004).
@@ -195,6 +196,15 @@ Two formula notes for that decision:
   Both multipliers predate any measurement and MUST be re-derived, not
   carried over (see also: the 50× silently bridges user-level TTDA to
   single-transaction service p99).
+
+**Resolved (chair, 2026-08-11).** The operating point moves to C=256, the
+deepest calibrated overload (128 × `N_knee` with current constants), where
+the coincidence disappears: the unmitigated system delivers p99 ≈ 689 ms
+against a 50 × `p99_knee` ≈ 34 ms bar. The 50× multiplier is retained —
+re-checked against measurement rather than carried over blindly: it sits
+~20× below the unmitigated tail (a real distinction to clear) and is
+achievable only by an arm whose rejections are actually fast, which is the
+behaviour the experiment exists to reward.
 
 Limitations of this run: the single-process Python HTTP server is part of
 the measured system and contributes materially past ~C=32 (the sharded
@@ -246,10 +256,10 @@ determines whether the ablation ladder has a measurable subject at all.
 
 **Consequently the choice of primary metric could not rest on this run.**
 The 2026-08-11 rerun (above) now supplies the evidence: with a real endpoint
-both goodput and tail degrade measurably (3.2× and ~1000× respectively), so
-either could anchor the evaluation. The decision between them — and the
-re-derivation of the threshold multipliers — remains open for the chair per
-R6's ordering.
+both goodput and tail degrade measurably (3.2× and ~1000× respectively).
+The chair decided on 2026-08-11: p99 TTDA is primary with goodput as
+guardrail, evaluated at C=256 — see R6 for the ratified constants and
+rationale.
 
 #### Standing limitations of the SQLite approach
 
@@ -460,10 +470,13 @@ Where applicable, metrics MUST be split between successful and rejected users.
 
 The primary metric is p99 time-to-definitive-answer.
 
-> **Provisional.** Originally justified by a withdrawn result; the 2026-08-11
-> rerun (R2, *Calibration status*) shows both tail (~1000×) and goodput
-> (3.2×) degrade under overload, so the data supports either choice. The
-> chair's decision at R6 step 2 confirms or changes this.
+> **Ratified (chair, 2026-08-11).** Originally justified by a withdrawn
+> result, the choice now rests on the 2026-08-11 rerun: the tail degrades
+> ~1000× (0.68 → 689 ms) while queue discipline — not capacity — determines
+> whether a synchronized stampede produces catastrophic tails, so tail
+> behaviour is what the candidate mechanisms actually move. Goodput (3.2×
+> lost at C=256) is the guardrail: it must be recovered, but recovering it
+> without fast definitive answers is not success.
 
 ### Guardrail — goodput
 
@@ -541,22 +554,38 @@ engine.
 Each MUST be reported as a median across at least 20 replications, together with
 its observed range.
 
-**Status: measured, not yet fixed.** The 2026-08-11 run supplies candidate
-values — `N_knee` = 2 (knee region 2–8), `C_peak` = 4865 ops/s,
-`p99_knee` = 0.684 ms; see R2, *Calibration status* — but fixing them here is
-step 2 of the ordering above and awaits the chair, together with a
-re-derivation of the 8× and 50× multipliers, which predate any measurement.
-No constants are fixed until that decision is recorded.
+**Status: FIXED — ratified by the chair, 2026-08-11**, from the 2026-08-11
+calibration run (R2, *Calibration status*):
+
+| Constant | Value | Basis |
+|---|---|---|
+| `N_knee` | 2 (knee region 2–8) | median-throughput peak, 20 reps |
+| `C_peak` | 4865 ops/s | range 4674–5004 |
+| `p99_knee` | 0.684 ms | range 0.656–0.975 |
+| Operating point | C=256 (128 × `N_knee`) | deepest calibrated overload |
+
+The pre-measurement "≥ 8 × `N_knee`" operating point was re-derived to
+C=256 (rationale in R2, *Resolved*); the 50× threshold multiplier was
+retained after checking against measurement. Per the ordering above these
+values now bind R4's runs and MUST NOT be revised to accommodate a result.
+They recalibrate only if R2 is rerun on different hardware or a different
+engine, in which case the new values are recorded here with the same
+ratification step.
 
 ### Success criteria
 
-For a candidate arm at >= 8 × `N_knee` offered concurrency, measured against the
-strong baseline (R5):
+For a candidate arm at the ratified operating point — C=256 offered
+concurrency, the deepest calibrated overload — measured against the strong
+baseline (R5). Numeric values follow from the ratified constants and are
+stated alongside each formula:
 
-- p99 TTDA <= 50 × `p99_knee`;
+- p99 TTDA <= 50 × `p99_knee` (= 34.2 ms; unmitigated measures ~689 ms);
 - p99 TTDA for rejected users <= p99 TTDA for winners;
-- goodput >= 0.8 × `C_peak` — a guardrail, not a success signal; an arm that
-  fails it has traded throughput for latency and MUST justify that;
+- goodput >= 0.8 × `C_peak` (= 3892 ops/s) — a guardrail, not a success
+  signal. Note this bar now *bites*: the unmitigated system delivers only
+  1537 ops/s at C=256, so a candidate must recover ~2.5× of lost
+  throughput while also cutting the tail ~20×; an arm that fails the
+  guardrail has traded throughput for latency and MUST justify that;
 - 100% of inventory accounted for;
 - zero double-sold seats;
 - zero lost seats;
@@ -743,17 +772,18 @@ Before implementation is considered complete for the requirements phase:
 - No experiment requires contacting IRCTC.
 - Open assumptions are identified rather than silently treated as facts.
 
-Two items remain open and block the requirements phase:
+All checklist items are satisfied as of 2026-08-11: the chair ratified the
+calibration constants (`N_knee` = 2, `C_peak` = 4865 ops/s,
+`p99_knee` = 0.684 ms), the C=256 operating point, and the primary metric
+(p99 TTDA, goodput guardrail). **The requirements phase is complete.**
 
-- `N_knee`, `C_peak`, and `p99_knee` are measured (2026-08-11 run) but not
-  yet fixed — R6 step 2 awaits the chair, including re-derivation of the
-  8× operating-point and 50× threshold multipliers.
-- The primary-metric choice awaits the same decision; the rerun shows both
-  candidate metrics degrade measurably, so evidence no longer forces either.
+Carried into the build phase, not blockers here:
 
-The simulator-fit half of R2's acceptance (fit the server model, plot the
-fit, report multiple knee shapes) is blocked on the simulator existing and
-belongs to the build phase.
+- the simulator-fit half of R2's acceptance (fit the server model, plot the
+  fit, report multiple knee shapes) — requires the simulator to exist;
+- thresholds for wasted-work ratio, fairness, and settling time (see
+  *Thresholds not yet set*) — MUST be set or designated report-only before
+  any R4 arm runs.
 
 ---
 
