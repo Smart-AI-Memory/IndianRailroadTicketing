@@ -203,6 +203,46 @@ regression check and is never compared against mechanism arms.
 **Binds:** R5 baselines; population-derivation §4/§5; every D7
 comparison's data provenance.
 
+## D13 — population constants registered; bot repertoire frozen
+
+**Date:** 2026-08-12 · **Decided by:** chair (registration pass over
+population-derivation A1–A5) · **Status:** final
+
+Registered per pre-registration discipline (D1); no value below may be
+adjusted after runs — misses are reported:
+
+1. **Carries:** operating scale 30 / 2500 / 150 / 60 (pre_fire /
+   t0_humans / bots / background); σ_T0 = 0.35 s; background window
+   T0+2 s → T0+32 s; **20 seeds** as the universal per-cell floor,
+   centers reusing main-sweep data.
+2. **M1 registration uptake is SWEPT** (chair ruling, against the
+   fixed-value recommendation): `r_reg` ∈ {0.5, 0.8, 0.95}, center
+   0.8 — M1's result is reported as a function of registration uptake.
+   Grid taken from the ruled option's stated example; the chair may
+   amend the grid by a further entry before M1 runs.
+3. **Bot repertoire FROZEN (D9 executed):** four strategies as defined
+   in population-derivation A3 — race and mimic carrying v1 values
+   (race: uniform [T0, T0+50 ms], `bot_speedup` 0.5; mimic: |N(0,
+   0.35 s)|, cadence 0.5), camp (first 5% of W / within 50 ms of
+   tranche opens), identity-split (m identities, mimic timing) — with
+   the degenerate-form rule (camp→race, identity-split→mimic where
+   inapplicable) and mix **60 / 30 / 30 / 30**. No strategy adapts to
+   observed outcomes.
+4. **Identity-abuse model (D10 executed):** m = 5 fixed; prevalence
+   swept p ∈ {0, 0.1, 0.2, 0.4} of the bot cohort in M2 cells
+   (0/15/30/60 abusers), zero-abuse anchoring, p = 0.2 aligned with
+   the A3 mix center.
+5. **Prediction P1 registered:** at p = 0, per-strategy fairness for
+   race and mimic under M2 ≈ 1; residual advantage at p = 0 is an
+   implementation-leak diagnostic, not a finding.
+6. **§7 resolutions adopted:** background cohort unchanged under M3
+   (fidelity), settling window per-arm after the final allocation
+   event; M1 registration is one-shot per registrant, uniform over W.
+
+**Binds:** population-derivation.md (status: registered); every v2
+evaluated run's workload; M1's cell structure (r_reg × its other
+axes); M2's abuse sweep.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*
