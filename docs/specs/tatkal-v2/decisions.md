@@ -170,6 +170,24 @@ pre-registered per D3 discipline. The zero-abuse cell anchors the sweep
 **Binds:** R2.2; R6 population derivation (abuse-prevalence axis); M2's
 fairness metric registration.
 
+## D11 — v2 requirements ratified in full
+
+**Date:** 2026-08-12 · **Decided by:** chair · **Status:** final
+
+requirements.md, as drafted from D1–D6 and amended by the D7–D10
+judgment-call rulings, is **ratified in full**. R1–R8, the deferral
+list, the safety boundary, honest framing, and the expected-result
+hypothesis are binding. Every UNSET constant remains open by design and
+must be fixed by decision entry before any run that depends on it, per
+D1's pre-registration discipline.
+
+The design phase opens. First artifact: the R6 population derivation
+document (D4/D9/D10 all feed it; the mechanism arms cannot be detailed
+until it exists).
+
+**Binds:** requirements.md (status: ratified); the design phase's
+sequencing.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*

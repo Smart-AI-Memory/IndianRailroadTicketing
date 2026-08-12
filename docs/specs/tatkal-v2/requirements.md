@@ -1,9 +1,8 @@
 # tatkal-v2 — requirements
 
-**Status:** draft as amended by D7–D10 (2026-08-12) — the four open
-judgment calls are ruled (baselines D7, FRFS stance D8, bot repertoire
-D9, identity-abuse sweep D10); full-document ratification pending chair
-sign-off. Every
+**Status:** RATIFIED (2026-08-12, D11) — as amended by the D7–D10
+judgment-call rulings (baselines D7, FRFS stance D8, bot repertoire D9,
+identity-abuse sweep D10). Every
 numeric constant in this document is either carried from v1 with its
 source named, or explicitly marked **UNSET**; per D1's pre-registration
 discipline, an UNSET constant must be fixed by a decision entry before
