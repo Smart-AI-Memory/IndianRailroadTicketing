@@ -56,6 +56,13 @@ class WorkloadConfig:
     zipf_s: float = 1.1
     classes: tuple[str, ...] = ("AC",)
     date: str = "D0"
+    # bot behaviour family (P8, R7.1 circularity guard): the classifier is
+    # TRAINED on one family and EVALUATED against the others, which it has
+    # never seen. Arrival pattern per family; cadence via ClientConfig.
+    #   sniper — uniform in the bot window right at T0 (the default)
+    #   burst  — a tight volley a few ms after T0
+    #   mimic  — human-shaped arrival jitter; only cadence differs
+    bot_family: str = "sniper"
 
 
 #: Operating workload — the SUPERCRITICAL realization of the ratified
@@ -110,7 +117,14 @@ def generate_intents(
         uid += 1
 
     for _ in range(n_bots):
-        t = cfg.t0 + arrivals.uniform(0.0, cfg.bot_window)
+        if cfg.bot_family == "sniper":
+            t = cfg.t0 + arrivals.uniform(0.0, cfg.bot_window)
+        elif cfg.bot_family == "burst":
+            t = cfg.t0 + arrivals.uniform(0.005, 0.015)
+        elif cfg.bot_family == "mimic":
+            t = cfg.t0 + abs(arrivals.gauss(0.0, 0.2))  # human-shaped arrival
+        else:
+            raise ValueError(f"unknown bot_family: {cfg.bot_family}")
         intents.append(Intent(uid, draw_pool(), "bots", t))
         uid += 1
 

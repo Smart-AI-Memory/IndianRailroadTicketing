@@ -208,9 +208,11 @@ class ClientEngine:
                 st.t_token = now
             if now - st.t_token > st.patience:
                 self._abandon(st)
-            else:  # poll status; polling is not a retry
+            else:  # poll status; polling is not a retry. Bots poll at their
+                # faster cadence (R3.9) — the signal P8's classifier reads.
                 self.queue.schedule_in(
-                    self.cfg.poll_interval, lambda: self._submit(st, is_poll=True)
+                    self.cfg.poll_interval * self._speed(st),
+                    lambda: self._submit(st, is_poll=True),
                 )
             return
         if outcome in DEFINITIVE:

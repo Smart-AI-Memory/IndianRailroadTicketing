@@ -52,6 +52,7 @@ class WaitingRoom:
         *,
         window: int = 8,
         edge_cost: float = 0.0005,
+        classifier=None,  # rung 6 (D10/S1): two-priority queue when set
     ) -> None:
         self.inner = inner
         self.server = server
@@ -59,7 +60,9 @@ class WaitingRoom:
         self.queue = queue
         self.window = window
         self.edge_cost = edge_cost
+        self.classifier = classifier
         self.fifo: deque[_Token] = deque()
+        self.flagged_fifo: deque[_Token] = deque()  # served only when fifo empty
         self.tokens: dict[int, _Token] = {}
         self.in_flight = 0
         self.evicted_pools: set[Pool] = set()
@@ -81,6 +84,8 @@ class WaitingRoom:
             # late arrival for a dead pool: edge answer, no token, no server
             self.queue.schedule_in(self.edge_cost, lambda: respond(Outcome.SOLD_OUT))
             return
+        if self.classifier is not None:
+            self.classifier.observe(user_id, self.clock.now())
         if user_id not in self.tokens:
             token = _Token(user_id, pool)
             self.tokens[user_id] = token
@@ -91,11 +96,29 @@ class WaitingRoom:
         self.server.submit_light(user_id, Outcome.QUEUE_POSITION, respond)
 
     # -- token machinery -----------------------------------------------------
-    def _pump(self) -> None:
-        while self.in_flight < self.window and self.fifo:
+    def _next_token(self) -> _Token | None:
+        """Two-priority pop (D10/S1): unflagged first; a token found flagged
+        at pop time is demoted, never discarded — deprioritization costs a
+        false positive delay, not the seat."""
+        while self.fifo:
             token = self.fifo.popleft()
             if token.evicted:
                 continue
+            if self.classifier is not None and self.classifier.is_flagged(token.user_id):
+                self.flagged_fifo.append(token)
+                continue
+            return token
+        while self.flagged_fifo:
+            token = self.flagged_fifo.popleft()
+            if not token.evicted:
+                return token
+        return None
+
+    def _pump(self) -> None:
+        while self.in_flight < self.window:
+            token = self._next_token()
+            if token is None:
+                return
             token.forwarded = True
             self.in_flight += 1
             self.inner.submit(token.user_id, token.pool, lambda o, t=token: self._on_result(t, o))
@@ -114,9 +137,11 @@ class WaitingRoom:
         self._pump()
 
     def _evict(self, pool: Pool) -> None:
-        """D10: sell-out resolves every queued token for the pool NOW."""
+        """D10: sell-out resolves every queued token for the pool NOW —
+        in both priority classes; flagged users learn their fate equally
+        fast (deprioritization delays service, never the answer)."""
         self.evicted_pools.add(pool)
-        for token in list(self.fifo):
+        for token in list(self.fifo) + list(self.flagged_fifo):
             if token.pool == pool and not token.evicted:
                 token.evicted = True
                 if self.push is not None:

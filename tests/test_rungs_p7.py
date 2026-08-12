@@ -20,7 +20,7 @@ def metrics_and_log(arm, seed=1):
     intents = generate_intents(arm.wcfg, arm.fidelity, streams)
     log: list = []
     server = Server(clock, queue, streams, arm.fidelity, arm.scfg, arm.wcfg.t0, log=log)
-    service = build_rung(arm.rung, server, clock, queue)
+    service = build_rung(arm.rung, server, clock, queue, getattr(arm, 'rung_params', None))
     engine = ClientEngine(clock, queue, streams, arm.fidelity, arm.ccfg, arm.wcfg, service, log=log)
     layer = service
     while layer is not server:
@@ -120,7 +120,7 @@ def test_rung5_limiter_converges_to_a_sane_band():
     intents = generate_intents(arm.wcfg, arm.fidelity, streams)
     log: list = []
     server = Server(clock, queue, streams, arm.fidelity, arm.scfg, arm.wcfg.t0, log=log)
-    service = build_rung(arm.rung, server, clock, queue)
+    service = build_rung(arm.rung, server, clock, queue, getattr(arm, 'rung_params', None))
     engine = ClientEngine(clock, queue, streams, arm.fidelity, arm.ccfg, arm.wcfg, service, log=log)
     layer = service
     limiter = None

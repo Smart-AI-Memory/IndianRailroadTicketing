@@ -32,6 +32,8 @@ class RungParams:
     # one-mechanism swap, documented in reports)
     room_window_adaptive: int = 64
     adaptive_target_s: float = 0.00684  # 10 x p99_knee (D8)
+    classifier_params: object | None = None  # rung 6: None -> FROZEN_PARAMS
+    force_classifier: bool = False  # out-of-order arms: classifier below rung 6
 
 
 def build_rung(
@@ -77,13 +79,23 @@ def build_rung(
         )
     # k >= 3: sharding is a ServerConfig change, applied by ladder_arm
     if k >= 4:
+        classifier = None
+        if k >= 6 or params.force_classifier:  # verdict -> two-priority queue
+            from tatkal_sim.strategies.bot_classifier import (
+                FROZEN_PARAMS,
+                BotClassifier,
+            )
+
+            cp = params.classifier_params or FROZEN_PARAMS
+            classifier = BotClassifier(cp, server.t0)
         svc = WaitingRoom(
             svc,
             server,
             clock,
             queue,
             window=params.room_window if k < 5 else params.room_window_adaptive,
+            classifier=classifier,
         )
-    if k >= 6:
-        raise NotImplementedError(f"rung {k} lands in P8")
+    if k >= 7:
+        raise NotImplementedError(f"no rung {k} exists (R7.3 omitted, D11)")
     return svc

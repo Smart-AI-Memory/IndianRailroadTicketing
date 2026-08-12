@@ -75,6 +75,7 @@ class Arm:
     wcfg: WorkloadConfig = field(default_factory=lambda: OPERATING_WORKLOAD)
     variant: str = "fitted"  # knee-shape profile name (R2 acceptance)
     rung: int = 0  # cumulative ladder rung (D5); 0 = naive bare server
+    rung_params: object = None  # optional RungParams override
     out_of_order: bool = False  # R4/D5: labelled, never reported as a rung
 
 
@@ -88,7 +89,7 @@ def run_arm_once(arm: Arm, seed: int) -> dict:
     server = Server(clock, queue, streams, arm.fidelity, arm.scfg, arm.wcfg.t0, log=log)
     from tatkal_sim.strategies.base import build_rung  # local: avoids import cycle
 
-    service = build_rung(arm.rung, server, clock, queue)
+    service = build_rung(arm.rung, server, clock, queue, arm.rung_params)
     engine = ClientEngine(clock, queue, streams, arm.fidelity, arm.ccfg, arm.wcfg, service, log=log)
     # wire push delivery (rung 4+): walk the middleware chain to the server
     layer = service
