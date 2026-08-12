@@ -362,6 +362,35 @@ final — evaluated runs may begin
 
 **Binds:** RESULTS.md grading; any future M1/M2 cell's floor.
 
+## D19 — v2 experiment concluded; results final
+
+**Date:** 2026-08-12 · **Decided by:** chair · **Status:** final
+
+The full v2 ladder (V0–V7) was executed under the ratified protocol:
+D13 population, D14 windows and costing, D17 bars/guards/multiplicity,
+D18 grading rulings. RESULTS.md is the graded record (merged to main,
+PR #6):
+
+- Allocation mechanisms deliver controller-level bot **parity** where
+  engineering delivered an orderly latency contest — M1 at every
+  uptake, M2 at zero abuse; all D7 comparisons Holm-distinguishable.
+- P1 confirmed; identity abuse pays ≈ m at low prevalence, under the
+  guard, self-diluting at scale — with honest-user fairness still
+  degrading in p.
+- The waiting room's advantage does not survive costing: break-even
+  ≤ 0.25× a status check; free push not distinguishable from
+  fast-fail under the v2 population.
+- M3 stands as an honest double negative: fairness guard breached,
+  inventory starved (125/200). One process miss recorded (D18.2).
+
+No further v2 arms may run against these criteria without a new
+decision entry. v3 candidates are as listed in RESULTS §8: costed
+M1/M2 notification bursts (the un-run grid), identity mitigation for
+M2, M3 retry-model sensitivity, and the standing v1 deferrals. This
+ledger is sealed at D19.
+
+**Binds:** the v2 record; any future v3 spec's starting point.
+
 ## Open questions (no decision yet)
 
-*(new questions get logged here)*
+*(sealed at D19 — new questions belong to a v3 ledger)*
