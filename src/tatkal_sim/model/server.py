@@ -69,6 +69,7 @@ class ServerConfig:
     # Zero by default: inert outside calibration-fitted profiles.
     hold_stall_p: float = 0.0
     hold_stall_mean: float = 0.0
+    status_cost_factor: float = 0.2  # R8: status check = app_time / 5 (design)
     seats_per_pool: int = 50
     sharded: bool = False
     assumed_client_timeout: float = 2.0  # wasted_work-OFF shedding horizon
@@ -80,6 +81,11 @@ class _Req:
     pool: Pool
     respond: Callable[[Outcome], None]
     t_submit: float
+    # status-check path (R8): when set, the request takes a worker for
+    # app_time * cost_factor and answers with this outcome — no lock, no
+    # inventory. Status checks contend for the SAME capacity as bookings.
+    light_outcome: Outcome | None = None
+    cost_factor: float = 1.0
 
 
 class Server:
@@ -134,7 +140,28 @@ class Server:
 
     # -- Service protocol ----------------------------------------------------
     def submit(self, user_id: int, pool: Pool, respond: Callable[[Outcome], None]) -> None:
-        req = _Req(user_id, pool, respond, self.clock.now())
+        self._submit_req(_Req(user_id, pool, respond, self.clock.now()))
+
+    def submit_light(
+        self, user_id: int, outcome: Outcome, respond: Callable[[Outcome], None]
+    ) -> None:
+        """Status-check request (R8): same conn/worker gauntlet as a
+        booking, a fraction of the app time, the caller's outcome back.
+        The waiting room uses this so its status stream genuinely contends
+        for server capacity."""
+        self._submit_req(
+            _Req(
+                user_id,
+                (0, "status", "-"),
+                respond,
+                self.clock.now(),
+                light_outcome=outcome,
+                cost_factor=self.cfg.status_cost_factor,
+            )
+        )
+
+    def _submit_req(self, req: _Req) -> None:
+        respond = req.respond
         if self._bounded() and self._conns >= self.cfg.conn_limit:
             self.hard_errors_conn += 1
             self.queue.schedule_in(0.0, lambda: respond(Outcome.HARD_ERROR))
@@ -166,7 +193,13 @@ class Server:
             return
         self._busy += 1
         t_service_start = self.clock.now()
-        app = self._app_time()
+        app = self._app_time() * req.cost_factor
+        if req.light_outcome is not None:
+            # status path (R8): worker held for the light app time, no lock
+            self.queue.schedule_in(
+                app, lambda: self._finish(req, req.light_outcome, t_service_start)
+            )
+            return
         if self.clock.now() < self.t0:
             # pre-T0 fast path: app logic only, clean "not open" (D10/S2)
             self.queue.schedule_in(
@@ -216,8 +249,19 @@ class Server:
         self._busy -= 1
         self._conns -= 1
         # served BEFORE respond: metrics pair a served entry with a
-        # stale_response at the same (t, uid) to attribute wasted work
-        self.log.append(("served", self.clock.now(), req.user_id, repr(busy), outcome.value))
+        # stale_response at the same (t, uid) to attribute wasted work.
+        # 6th field: full in-server wait (submit -> response) for the R8
+        # per-stream saturation criterion.
+        self.log.append(
+            (
+                "served",
+                self.clock.now(),
+                req.user_id,
+                repr(busy),
+                outcome.value,
+                repr(self.clock.now() - req.t_submit),
+            )
+        )
         req.respond(outcome)
         self._pull_next()
 

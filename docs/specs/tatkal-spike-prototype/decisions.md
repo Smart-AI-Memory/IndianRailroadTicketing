@@ -322,6 +322,25 @@ discipline; its near-floor strictness belongs in the write-up.
 **Binds:** requirements R6 (metric definitions + success criteria
 operand), measure/metrics.py, reports from P6 onward.
 
+## D16 — P7 model refinements: room opens at T0; patience from token
+
+**Date:** 2026-08-11 · **Decided by:** build-phase findings, recorded for
+chair visibility · **Status:** ratified by execution (matrix-consistent)
+
+Two client/room semantics fixed during P7, both found by failing tests:
+
+1. **The waiting room opens AT T0.** Pre-T0 requests pass through to the
+   server's "not open" path so the outcome matrix re-fires them at T0.
+   (Tokening them pushed NOT_OPEN as a definitive and killed pre-fire
+   intents outright.)
+2. **Queue-position patience runs from token issuance.** A queue position
+   is a progress signal; measuring patience from the first request made
+   pre-fire campers abandon the moment they were finally queued — camping
+   20 s then quitting on good news.
+
+**Binds:** strategies/waiting_room.py, model/users.py outcome matrix
+(QUEUE_POSITION branch).
+
 ## Open questions (no decision yet)
 
 *(none — the P6 TTDA collision was resolved by D15; new questions get

@@ -26,6 +26,12 @@ class RungParams:
     admit_limit: int = 8  # rung 1: knee-region concurrency bound (swept at P9)
     fastfail_staleness: float = 0.05  # rung 2: cache learning lag, seconds
     fastfail_reject_cost: float = 0.0005  # edge reject latency, seconds
+    room_window: int = 8  # rung 4: concurrent forwarded tokens
+    # rung 5: the static bound moves inside and becomes adaptive; the room
+    # window widens so the limiter is the binding constraint (part of the
+    # one-mechanism swap, documented in reports)
+    room_window_adaptive: int = 64
+    adaptive_target_s: float = 0.00684  # 10 x p99_knee (D8)
 
 
 def build_rung(
@@ -35,14 +41,32 @@ def build_rung(
     queue: EventQueue,
     params: RungParams | None = None,
 ) -> Service:
-    """The cumulative chain for rung k (0..2 at P6; P7 extends)."""
+    """The cumulative chain for rung k (D5).
+
+    rung 0: server (naive)
+    rung 1: BoundedFifo(server)
+    rung 2: FastFail(BoundedFifo(server))            <- R5 strong baseline
+    rung 3: rung 2 chain; sharding lives in the Arm's ServerConfig
+    rung 4: WaitingRoom(FastFail(BoundedFifo(server)))
+    rung 5: WaitingRoom(FastFail(AdaptiveLimit(server)))
+    """
+    from tatkal_sim.strategies.adaptive import AdaptiveLimit
     from tatkal_sim.strategies.bounded_fifo import BoundedFifo
     from tatkal_sim.strategies.fast_fail import FastFail
+    from tatkal_sim.strategies.waiting_room import WaitingRoom
 
     params = params or RungParams()
     svc: Service = server  # rung 0: naive — unbounded admission, bare server
     if k >= 1:
-        svc = BoundedFifo(svc, limit=params.admit_limit)
+        if k >= 5:  # the one-mechanism swap: static bound -> adaptive
+            svc = AdaptiveLimit(
+                svc,
+                clock,
+                target_s=params.adaptive_target_s,
+                start=float(params.admit_limit),
+            )
+        else:
+            svc = BoundedFifo(svc, limit=params.admit_limit)
     if k >= 2:
         svc = FastFail(
             svc,
@@ -51,6 +75,15 @@ def build_rung(
             staleness=params.fastfail_staleness,
             reject_cost=params.fastfail_reject_cost,
         )
-    if k >= 3:
-        raise NotImplementedError(f"rung {k} lands in P7/P8")
+    # k >= 3: sharding is a ServerConfig change, applied by ladder_arm
+    if k >= 4:
+        svc = WaitingRoom(
+            svc,
+            server,
+            clock,
+            queue,
+            window=params.room_window if k < 5 else params.room_window_adaptive,
+        )
+    if k >= 6:
+        raise NotImplementedError(f"rung {k} lands in P8")
     return svc

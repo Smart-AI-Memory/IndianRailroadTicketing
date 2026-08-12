@@ -157,6 +157,33 @@ def compute(
     }
 
 
+def r8_status_stream(log: list) -> dict:
+    """R8 per-stream evaluation over the served log (design's saturation
+    criterion, D10/S6): the status endpoint is the new bottleneck iff
+    status-stream p99 in-server wait exceeds the booking-stream's, OR the
+    status stream consumes > 50% of worker capacity."""
+    served = [e for e in log if e[0] == "served" and len(e) >= 6]
+    status_w = [float(e[5]) for e in served if e[4] == Outcome.QUEUE_POSITION.value]
+    booking_w = [
+        float(e[5]) for e in served if e[4] in (Outcome.BOOKED.value, Outcome.SOLD_OUT.value)
+    ]
+    busy_status = sum(float(e[3]) for e in served if e[4] == Outcome.QUEUE_POSITION.value)
+    busy_total = sum(float(e[3]) for e in served)
+    p99_status = _pct(status_w, 0.99)
+    p99_booking = _pct(booking_w, 0.99)
+    share = busy_status / busy_total if busy_total else 0.0
+    saturated = (
+        p99_status is not None and p99_booking is not None and p99_status > p99_booking
+    ) or share > 0.5
+    return {
+        "status_requests": len(status_w),
+        "status_p99_wait_s": p99_status,
+        "booking_p99_wait_s": p99_booking,
+        "status_busy_share": share,
+        "status_is_new_bottleneck": saturated,
+    }
+
+
 def _settling_time(log: list, t0: float) -> float | None:
     """Ratified definition: 1 s rolling p99; baseline = window ending
     T0-10 s; settled = within 2x baseline for 5 consecutive seconds;

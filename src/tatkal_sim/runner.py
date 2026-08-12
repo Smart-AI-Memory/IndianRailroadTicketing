@@ -90,6 +90,12 @@ def run_arm_once(arm: Arm, seed: int) -> dict:
 
     service = build_rung(arm.rung, server, clock, queue)
     engine = ClientEngine(clock, queue, streams, arm.fidelity, arm.ccfg, arm.wcfg, service, log=log)
+    # wire push delivery (rung 4+): walk the middleware chain to the server
+    layer = service
+    while layer is not server:
+        if hasattr(layer, "bind_push"):
+            layer.bind_push(engine.push_definitive)
+        layer = getattr(layer, "inner", server)
     engine.start(intents)
     queue.run(max_events=5_000_000)
     server.inventory.assert_ok()  # invariants run on EVERY run (R3.4)
@@ -107,6 +113,34 @@ def run_arm_once(arm: Arm, seed: int) -> dict:
 def sweep(arms: list[Arm], seeds: list[int]) -> dict[str, dict[int, dict]]:
     """All arms x all seeds. Same seed -> same workload trace across arms."""
     return {arm.name: {seed: run_arm_once(arm, seed) for seed in seeds} for arm in arms}
+
+
+def ladder_arm(
+    k: int,
+    *,
+    seats: int = 25,
+    ccfg: ClientConfig | None = None,
+    variant: str = "fitted",
+) -> Arm:
+    """Canonical Arm for ladder rung k (D5 composition in one place).
+
+    Sharding (rung 3's mechanism) is a ServerConfig change and applies to
+    every rung >= 3. Knee variants select the server profile (R2)."""
+    import dataclasses as dc
+
+    from tatkal_sim.measure.fitting import FIT_JSON, knee_variant, load_fit
+
+    scfg = knee_variant(variant, load_fit(FIT_JSON)["params"])
+    scfg = dc.replace(scfg, seats_per_pool=seats, sharded=(k >= 3))
+    suffix = "" if variant == "fitted" else f"-{variant}"
+    return Arm(
+        f"rung{k}{suffix}",
+        scfg,
+        wcfg=OPERATING_WORKLOAD,
+        ccfg=ccfg or ClientConfig(),
+        variant=variant,
+        rung=k,
+    )
 
 
 def metric_series(results: dict[int, dict], path: str) -> dict[int, float]:
