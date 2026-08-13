@@ -1,10 +1,10 @@
 # tatkal-v3 — design
 
-**Status:** draft (2026-08-12) — awaiting chair review. Constants
-marked **PROPOSED** require registration by decision entry; D6-
-registered constants are cited, not re-opened.
+**Status:** approved 2026-08-13 (D8). Every constant and semantic
+below is registered by decision entry — nothing here is PROPOSED.
+D6-registered constants are cited, not re-opened.
 
-**Inputs:** requirements.md (ratified, D7); v3 ledger D1–D6; the v2
+**Inputs:** requirements.md (ratified, D7); v3 ledger D1–D8; the v2
 simulator and archives (population D3-carried, so v2's archived cells
 are directly reusable as baselines and anchors).
 
@@ -38,9 +38,14 @@ small extensions of `LotteryPool`:
   submitted to the **shared worker pool** at
   `c_verify × status_cost_factor` (D6.4 grid {0, ½, 1, 2}; the zero
   cell is the unmitigated continuity anchor and reuses the v2
-  archive). One item per identity, not per poll — **PROPOSED** (the
-  alternative, re-verification per poll, models a stateless verifier
-  and multiplies load; not what real verification does).
+  archive). One item per identity, not per poll — **registered
+  (D8.1)** (the alternative, re-verification per poll, models a
+  stateless verifier and multiplies load; not what real verification
+  does).
+- **Verification is cached per identity, not per entry (D8.1 rider):**
+  an identity that re-enters the pool under the R4 retry sweep does
+  NOT re-verify. Stated because v3 sweeps `p_retry` and the
+  interaction would otherwise be undefined.
 - **Verify-by-draw (D6.3):** the draw at T0+Q runs over identities
   whose verification completed by the draw instant ∩ still active.
   Later completions fall to the post-draw fast-fail path.
@@ -63,13 +68,17 @@ small extensions of `LotteryPool`:
   camp bots front-load (carried D13.3 behaviour); **identity-split
   abusers must pre-register all m identities** (registration
   one-shots × m, costed).
-- **Entry semantics — PROPOSED: reject-at-entry.** An unregistered
-  identity's pool entry gets an edge MECH_REJECT (fast definitive,
-  v1 reject semantics) rather than silent exclusion at the draw.
-  Rationale: walk-ups learn their fate in milliseconds instead of
-  waiting Q for a draw they were never in; the alternative
+- **Entry semantics — registered (D8.2): reject-at-entry.** An
+  unregistered identity's pool entry gets an edge MECH_REJECT (fast
+  definitive, v1 reject semantics) rather than silent exclusion at the
+  draw. Rationale: walk-ups learn their fate in milliseconds instead
+  of waiting Q for a draw they were never in; the alternative
   (exclude-at-draw) manufactures deliberate wait for users the
   mechanism has already decided against.
+- **Out-of-model note (D8.2 rider):** reject-at-entry is also a fast
+  oracle for registration state. Under the D3 fixed repertoire no
+  simulated abuser exploits it, so there is no in-model effect — it is
+  named in honest framing and never quantified.
 - Honest-user cost metric (D6.2): walk-up rejection count/rate per
   r_reg cell — the fairness-vs-inclusion trade-off is this arm's
   finding, reported as a function of uptake.
@@ -80,8 +89,7 @@ small extensions of `LotteryPool`:
 ## Deposit arm — forfeiture accounting (analysis module)
 
 D6.4 registers: seat value 1, **losers refunded**. The design
-consequence — flagged for chair review because it interprets what the
-deposit prices:
+consequence, **ruled at D8.3** — this is what the deposit prices:
 
 - With losers refunded, entry multiplication is capital-lockup only;
   the deposit's bite is on **multi-win forfeiture**: an abuser who
@@ -101,11 +109,13 @@ deposit prices:
 
 ## R3 — costed-burst cells
 
-- **Cell list — PROPOSED: center cells only.** M1 at r_reg = 0.8 and
-  M2 at p = 0.2, each × c_push {¼, ½, 1, 2} × 3 variants × 20 seeds
-  (zero cells already exist in the v2 archives). Full uptake/abuse ×
-  c_push crosses would quadruple the family for a second-order
-  interaction no hypothesis names.
+- **Cell list — registered (D8.4): center cells only.** M1 at
+  r_reg = 0.8 and M2 at p = 0.2, each × c_push {¼, ½, 1, 2} ×
+  3 variants × 20 seeds (zero cells already exist in the v2 archives).
+  Full uptake/abuse × c_push crosses would quadruple the family for a
+  second-order interaction no hypothesis names. D8.4 notes this
+  amends nothing: ratified R3 already reads "M1 (center uptake) and
+  M2 (center abuse)".
 - Floors per the amended rule with **D4.2 enumeration**: components
   included — notification-burst drain, winner-redemption drain;
   components omitted with cause — verification (absent from these
@@ -139,31 +149,35 @@ deposit prices:
 | family | cells | runs |
 |---|---|---|
 | M2v (c_verify {½,1,2} × p {0,.1,.2,.4}) | 12 × 3 variants | 720 |
-| M2r (r_reg {.5,.8,.95} × p {0,.2}) | 6 × 3 | 360 |
+| M2r (r_reg {.5,.8,.95} × p {0,.1,.2,.4}) | 12 × 3 | 720 |
 | costed bursts (2 arms × 4 c_push) | 8 × 3 | 480 |
 | M3 retry (3 values) | 3 × 3 | 180 |
-| **total** | **87 cells** | **1,740** |
+| **total** | **105 cells** | **2,100** |
 
-M2v × abuse cross is required (mitigation's whole point is its abuse
-response); M2r × abuse limited to {0, 0.2} — **PROPOSED** (the
-registration wall's abuse response is structural — abusers either
-pre-register m identities or lose them — so two prevalence points
-bound it; the full grid adds cells without a hypothesis).
+Both running mitigation arms carry the **full** D3 abuse grid
+p ∈ {0, 0.1, 0.2, 0.4} — **registered (D8.5)**. The draft proposed
+narrowing M2r to {0, 0.2} on the grounds that the registration wall's
+abuse response is structural; the chair rejected it. Ratified R2 binds
+all three arms to the same abuse grid, so narrowing one is a
+requirements amendment rather than a design choice, and none is made.
+Substantively: the deposit arm never runs, which makes M2v vs M2r the
+live head-to-head, and D5 makes the comparison across arms the
+finding — two common prevalence points is too thin a basis for it.
+The ruling costs +6 parameter cells / +360 runs against the draft.
 
-## Design choices open for chair review
+## Design choices — all ruled (D8)
 
-1. **M2v verification: one work item per identity at first entry**
-   (not per poll).
-2. **M2r entry semantics: reject-at-entry** (fast edge answer for
-   walk-ups).
-3. **Deposit forfeiture accounting** — the deposit prices multi-win
-   forfeiture given D6.4's losers-refunded model; d* computed from
-   per-controller win distributions; a large d* is an acceptable
-   finding.
-4. **Costed-burst cell list: center cells only** (no uptake/abuse ×
-   c_push cross).
-5. **M2r abuse grid limited to {0, 0.2}** (structural response, two
-   points bound it).
+The five choices this document put to the chair were ruled on
+2026-08-13. Four approved (1 and 2 with riders now folded into the
+arm sections above), one rejected:
 
-Each lands as a decision entry; tasks.md (with the D4.1 coverage
-table) follows once these are ruled.
+| # | choice | ruling |
+|---|---|---|
+| 1 | M2v: one work item per identity at first entry | approved + rider: verification cached per identity, no re-verify under retry |
+| 2 | M2r: reject-at-entry | approved + rider: registration oracle named as out-of-model |
+| 3 | deposit prices multi-win forfeiture; large d\* acceptable | approved |
+| 4 | costed bursts: center cells only | approved (confirmatory — matches ratified R3) |
+| 5 | M2r abuse grid {0, 0.2} | **rejected** — full grid stands (D8.5) |
+
+Next: tasks.md with the D4.1 bar × cell coverage table, checked
+against the budget above.

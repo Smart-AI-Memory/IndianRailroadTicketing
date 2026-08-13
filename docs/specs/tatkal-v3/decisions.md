@@ -136,6 +136,55 @@ model, and the costed-burst cell list checked against D4.1.
 
 **Binds:** requirements.md (status: ratified); design-phase sequencing.
 
+## D8 — the five open design choices ruled; M2r abuse grid restored to full
+
+**Date:** 2026-08-13 · **Decided by:** chair (design review pass over
+`design.md` §"Design choices open for chair review") · **Status:** final
+
+All five PROPOSED design choices are ruled. Four are approved as
+drafted, two of them with riders; the fifth is rejected in favour of
+the ratified requirement.
+
+1. **M2v verification work model — approved.** One verification work
+   item per identity at its first pool entry, not per poll; per-poll
+   re-verification models a stateless verifier and is not what real
+   verification does. **Rider:** verification is cached *per identity*,
+   not per entry — an identity re-entering the pool under the R4 retry
+   sweep does NOT re-verify. This is stated because v3 sweeps
+   `p_retry` and the interaction would otherwise be undefined.
+2. **M2r entry semantics — approved.** Unregistered entries get an
+   edge MECH_REJECT (v1 reject semantics) rather than silent
+   exclusion at the draw; walk-ups learn their fate in milliseconds
+   instead of waiting Q for a draw they were never in. **Rider:**
+   reject-at-entry is also a fast oracle for registration state. Under
+   the D3 fixed repertoire no simulated abuser exploits it, so there
+   is no in-model effect — this is recorded as an out-of-model
+   honest-framing item, not quantified.
+3. **Deposit forfeiture accounting — approved.** Given D6.4's
+   losers-refunded model the deposit prices multi-win forfeiture, and
+   d\* is computed from per-controller win distributions by
+   deterministic re-run (V7 pattern). A large d\* is pre-registered as
+   an acceptable and likely finding: the refund-losers design is weak
+   against low-multiplicity abuse, and reporting that is the point.
+4. **Costed-burst cell list — approved, confirmatory.** Center cells
+   only (M1 at r_reg = 0.8, M2 at p = 0.2 × the c_push grid). Noted:
+   this does not amend anything — ratified R3 already reads "M1
+   (center uptake) and M2 (center abuse)". The ruling confirms the
+   design matches the requirement.
+5. **M2r abuse grid — REJECTED as drafted; the full grid stands.**
+   M2r runs p ∈ {0, 0.1, 0.2, 0.4}, not {0, 0.2}. Ratified R2 binds
+   all three arms to the same abuse grid; narrowing one arm is an
+   amendment to a ratified requirement, not a design choice, and no
+   amendment is made. Substantively: the deposit arm never runs, so
+   M2v vs M2r is the live head-to-head, and D5 makes the comparison
+   across arms the finding — two common prevalence points is too thin
+   a basis for it. Cost accepted: M2r goes 6 → 12 parameter cells
+   (18 → 36 counted cells), 360 → 720 runs; family totals 87 → 105
+   cells and 1,740 → 2,100 evaluated runs.
+
+**Binds:** design.md (status: approved); the cell budget; tasks.md's
+D4.1 coverage table.
+
 ## Open questions (no decision yet)
 
 *(new questions get logged here)*
