@@ -1,9 +1,8 @@
 # tatkal-v3 — design
 
-**Status:** draft — proposed (2026-09-01); awaiting chair approval at
-the design gate. Constants marked **PROPOSED** become **registered**
-by the approving decision entry; DC1–DC6 are the choices the chair
-rules on.
+**Status:** APPROVED (2026-09-01, D13) — DC1–DC6 registered as
+proposed, none amended. Still owed before runs: success bars, guard
+values, and multiplicity policy (Gate B, per requirements R8).
 
 **Inputs:** requirements.md (draft), decisions.md D1–D11,
 `../tatkal-v2/design.md` (the machinery being extended),

@@ -1,11 +1,11 @@
 # tatkal-v3 — requirements
 
-**Status:** draft (2026-09-01) — authored under the opened D6 gate
-(synthesis PR #10 merged); awaiting chair ratification by decision
-entry. Every numeric constant is carried with its source named,
-marked **PROPOSED** (fixed at the design gate), or marked **UNSET**
-(fixed by decision entry before any run that depends on it — D1
-pre-registration discipline).
+**Status:** RATIFIED (2026-09-01, D12) — authored under the opened
+D6 gate (synthesis PR #10 merged). Every numeric constant is carried
+with its source named, **registered at the design gate** (D13), or
+marked **UNSET** (fixed by decision entry before any run that
+depends on it — D1 pre-registration discipline; bars and guards land
+at Gate B).
 
 **Purpose:** determine which currency of identity-pricing reclaims
 the lottery's fairness under abuse and at what cost to honest users;

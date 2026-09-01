@@ -277,3 +277,44 @@ The MariaDB install is recorded in the README when it happens
 (no-ad-hoc-installs discipline).
 
 **Binds:** v3 requirements R9; the anchor task in v3 tasks.md.
+
+## D12 — requirements ratified
+
+**Date:** 2026-09-01 · **Decided by:** chair · **Status:** final
+
+`requirements.md` R1–R10 are ratified as authored. The abuse-pricing
+statement obligation (R2), the bar-cell coverage and floor
+completeness bindings (R8/D4), the R9 anchor criteria procedure, and
+the first-class honest-cost readout (Honest framing) all bind.
+UNSET constants remain traceable to the entries that must fix them
+(Gate B for bars/guards; D13 below for the design constants).
+
+**Binds:** the v3 experiment's scope and procedure.
+
+## D13 — design approved; DC1–DC6 registered as proposed
+
+**Date:** 2026-09-01 · **Decided by:** chair · **Status:** final
+
+`design.md` is approved. DC1–DC6 are registered as proposed, none
+amended: c_verify ∈ {¼, 1, 4} × app time (DC1); the deterministic
+expected-value deposit entry rule (DC2); d ∈ {0.1, 0.5, 2} × V
+(DC3); the deadline-spike registration profile — 40% uniform + 60%
+final-10%, σ_reg = σ_T0, uniform as labelled variant (DC4);
+p_retry ∈ {0, 0.25, 0.5, 1.0} (DC5); anchor shape criteria — knee
+exists, p50 ≤ 2× and p99 ≥ 10× at 8× knee (DC6). The §Cell-budget
+table (59 cells / 1,180 runs) is the planning envelope; the binding
+cell list is tasks.md as gated at Gate B.
+
+**Binds:** every v3 mechanism constant named above.
+
+## D14 — task ladder approved; ladder active
+
+**Date:** 2026-09-01 · **Decided by:** chair · **Status:** final
+
+`tasks.md` W0–W6 is approved and the ladder is active. Gate B
+remains a chair decision standing between W3 and every evaluated
+run; the W3.4 bar-cell coverage table is a gate blocker (D4.1). W4
+(anchor run) is authorized to run ahead of W1–W3, its MariaDB
+install to be recorded in the README when it happens (D11).
+
+**Binds:** v3 execution order and gates.
