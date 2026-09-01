@@ -26,7 +26,7 @@ L (multi-day). Every task names its trace and acceptance.
 |---|---|---|---|---|
 | W1.1 | Priced-entry pipeline: entry filters/costs compose onto the M2 draw path without touching the draw | M | design §Shape | with all pricing disabled, M2 output is bit-identical to v2 M2 |
 | W1.2 | Verification work items on the shared pool at `c_verify`; `verify-missed` outcome stream | M | R2.1, DC1 | verification demand > window capacity produces clean `verify-missed`, never lost intents; pool-wait logged per identity |
-| W1.3 | Deposit entry rule (DC2) + forfeiture accounting; `forfeit` stream | M | R2.2, DC2/DC3 | at d = 0, k = m reproduces the v2 unmitigated cell; forfeiture ledger balances (stakes in = refunds + forfeits) |
+| W1.3 | Deposit entry rule (DC2 as amended by D17) + forfeiture accounting; `forfeit` stream | M | R2.2, DC2/DC3, D17 | at d = 0, k = m reproduces the v2 unmitigated cell; forfeiture ledger balances: stakes in = loser refunds + excess-win forfeits + redeemed-winner stakes (returned at redemption — the deposit is a bond, not a price; D17 finding 2) |
 | W1.4 | Deadline-spike registration profile (DC4) + `ineligible` stream; uniform profile as labelled variant | M | R2.3, R5.1 | per-profile arrival histograms match registered constants; open-loop guarantee holds |
 
 **Exit:** the one new simulator concept (priced entry) is a tested
@@ -48,7 +48,7 @@ statement is a recorded entry. Smoke runs are never cited as results.
 | ID | Task | Size | Trace | Acceptance |
 |---|---|---|---|---|
 | W3.1 | Honest-cost readout per arm (both clocks + arm-specific price), per cohort | M | R2, Honest framing | hand-computed synthetic-log values match |
-| W3.2 | Floor document: verification-pool floors per DC1 point; burst/winner-drain floors per c_push point; M3 floors per p_retry point — every derivation enumerating drain components | M | R8, D4.2 | one number per (arm, clock, variant, grid point); enumeration present for each |
+| W3.2 | Floor document: verification-pool floors per DC1 point (named per metric — aggregate drain vs wait-distribution, D17 finding 3); burst/winner-drain floors per c_push point; M3 floors per p_retry point — every derivation enumerating drain components | M | R8, D4.2, D17 | one number per (arm, clock, variant, grid point, metric); enumeration present for each |
 | W3.3 | Multiplicity inventory: every planned paired comparison across W5–W6, listed by family | S | R8 | the count Gate B needs |
 | W3.4 | **Bar-cell coverage table:** every bar the Gate-B draft registers ↔ its planned cell below | S | R8, D4.1 | zero uncovered bars; the table is in the Gate-B packet |
 
@@ -83,7 +83,7 @@ falsification — both acceptable, one mandatory.
 | W5.2 | A2 grid: d × p, fitted + center bracketing | M | R2.2 | forfeiture ledger balances in every cell |
 | W5.3 | A3 grid: profile × p, fitted + center bracketing | M | R2.3 | deadline-vs-uniform delta reported |
 | W5.4 | R3 bursts: 2 arms × c_push grid + bracketing | M | R3 | floors per grid point from W3.2 cited |
-| W5.5 | M3 × p_retry × 3 variants | M | R4 | per-tranche readouts; censoring companion present |
+| W5.5 | M3 × p_retry × 3 variants | M | R4, D17 | per-tranche readouts; censoring companion present; whole-run inventory, fairness, and retry amplification reported at every grid point (D17 finding 6) |
 
 **Exit:** every registered cell at full seed count; no cell below 20
 seeds exists anywhere; v2 reuse cells cited, not re-run.

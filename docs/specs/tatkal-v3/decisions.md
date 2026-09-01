@@ -368,3 +368,43 @@ D14 stand — this hedges them rather than reopening them.
 
 **Binds:** Gate B sequencing — no Gate B entry before the
 cross-review's findings are triaged.
+
+## D17 — cross-review executed; all six findings ruled REAL; amendments applied
+
+**Date:** 2026-09-01 · **Decided by:** chair (triage of the D16
+cross-review; seat: Codex; board thread
+`review-tmp-cross-review-v3-spec-20260901-1723`; receipts row in
+`../cross-review/receipts.md`, disposition `real`) · **Status:**
+final
+
+All three spec documents were sent in full (33,238 chars, nothing
+omitted). Six findings, all ruled real; amendments applied in this
+entry's commit:
+
+1. **DC2 objective corrected** (design): a controller redeems at
+   most one seat, so k* maximizes `P(≥1 win|k)·V − E[(wins−1)⁺|k]·d`
+   — the original form valued every win at V and biased k* upward.
+2. **W1.3 ledger invariant completed** (tasks): stakes in = loser
+   refunds + excess-win forfeits + redeemed-winner stakes, with the
+   redeemed stake returned at redemption (the deposit is a bond).
+3. **Verification floors named per metric** (design, W3.2):
+   aggregate-drain arithmetic bounds total drain only; per-identity
+   wait bars take queueing-derived floors at Gate B.
+4. **DC6 ladder-cap rule registered** (design): if 8× knee exceeds
+   the ladder cap, grade at the highest available multiple and
+   record the shortfall — binds future anchor runs, not the D15
+   grading (knee = 2, unaffected).
+5. **Knee detection registered** (design): argmax of median
+   steady-state throughput — the harness's computed rule, now on
+   paper.
+6. **W5.5 acceptance aligned with R4** (tasks): whole-run inventory,
+   fairness, and retry amplification at every grid point.
+
+The D16 hedge is discharged: findings triaged, amendments entered.
+Meta-note for the record: the reviewing seat independently surfaced
+the same failure class the same-day retro named (registered formulas
+not computed against their own semantics) — the hedge earned its
+place on its first use.
+
+**Binds:** DC2/DC6 as amended; W1.3/W3.2/W5.5 acceptance as amended.
+The Gate B path is now open.
