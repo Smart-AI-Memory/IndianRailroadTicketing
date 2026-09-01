@@ -318,3 +318,53 @@ run; the W3.4 bar-cell coverage table is a gate blocker (D4.1). W4
 install to be recorded in the README when it happens (D11).
 
 **Binds:** v3 execution order and gates.
+
+## D15 — W4 anchor graded: engine-independence FALSIFIED; DC6-b criterion miss recorded
+
+**Date:** 2026-09-01 · **Decided by:** moderator grading under the
+registered protocol; chair notified · **Status:** final (result
+entry; misses reported, never adjusted)
+
+The D11 MariaDB anchor ran same-day (12.3.3, full ladder, 20
+reps/level, zero errors; raw CSV in
+`../tatkal-spike-prototype/calibration/2026-09-01-mariadb-http.csv`;
+graded report `reports/w4-anchor-2026-09-01.md`). DC6 verdict as
+registered: (a) pass, **(b) FAIL** (p50 ratio 8.45 vs ≤ 2),
+**(c) FAIL** (p99 ratio 5.64 vs ≥ 10) — **the fitted server shape is
+not engine-independent.** MariaDB queues fairly (p50/p99 grow
+together, throughput holds at 96% of peak at C = 256); Postgres
+degrades tail-first (p99 ×50, throughput to 32% of peak).
+
+Recorded miss: DC6-b as registered is failed by the Postgres anchor
+itself (ratio 3.46) — the criterion encoded the synthesis slogan,
+not statistics computed from the anchor CSV. Graded as registered;
+the falsification does not hinge on it (report §criterion-miss).
+
+Consequences (bindings, not adjustments): fitted-variant results are
+scoped to Postgres-like engines; the plateau variant has a measured
+real instance; R4.3 three-variant reporting is load-bearing for
+every v3 headline. Synthesis threat #1 updated by addendum per D8's
+either-way obligation.
+
+**Binds:** interpretation scope of fitted-variant claims in v3
+reporting; the W4 exit criterion is met (two anchor lineages — with
+a recorded falsification, the mandatory acceptable outcome).
+
+## D16 — cross-model review of the spec documents before Gate B
+
+**Date:** 2026-09-01 · **Decided by:** chair (2026-09-01 retro, item
+5 — adopting the moderator's pushback against his own same-session
+D12–D14 batch ratification) · **Status:** final
+
+Before the Gate B entry is drafted, the ratified v3 spec documents
+(requirements.md, design.md, tasks.md) receive a **cross-model
+second-opinion review** (`/cross-review` — a different model than
+the authoring one; advisory, board-recorded). Rationale: author,
+recommender, and ratifier were one mind on one afternoon — the
+closed-review-loop weakness the `q-project-critical-review-001`
+round table named. The review is advisory; findings are triaged by
+the chair and any resulting amendments get their own entries. D12–
+D14 stand — this hedges them rather than reopening them.
+
+**Binds:** Gate B sequencing — no Gate B entry before the
+cross-review's findings are triaged.

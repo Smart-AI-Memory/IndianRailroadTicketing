@@ -56,7 +56,7 @@ import threading
 import time
 from http.client import HTTPConnection
 
-import psycopg
+import r2_db
 
 DEFAULT_DSN = "postgresql://r2@127.0.0.1:54329/r2"
 TRAINS = 8  # rows pre-created; hot-key mode uses only id=1
@@ -132,7 +132,7 @@ def _pct(xs: list[float], p: float) -> float:
 
 
 def _reset_seats(dsn: str) -> None:
-    with psycopg.connect(dsn, autocommit=True) as conn:
+    with r2_db.connect(dsn, autocommit=True) as conn:
         conn.execute("UPDATE seats SET remaining = %s", (SEATS,))
 
 
@@ -182,18 +182,18 @@ def main() -> int:
     ap.add_argument("--port", type=int, default=8077)
     ap.add_argument("--out", required=True, help="CSV output path")
     ap.add_argument("--quick", action="store_true", help="smoke test: 3 levels, 2 reps")
+    ap.add_argument("--reps", type=int, default=20, help="reps per level (full mode)")
     args = ap.parse_args()
 
     levels = [1, 8, 64] if args.quick else [1, 2, 4, 8, 16, 32, 64, 128, 256]
-    reps = 2 if args.quick else 20
+    reps = 2 if args.quick else args.reps
     duration = 1.0 if args.quick else 2.0
 
-    with psycopg.connect(args.dsn, autocommit=True) as conn:
+    engine_desc = r2_db.engine_description(args.dsn, r2_db.server_version(args.dsn))
+    with r2_db.connect(args.dsn, autocommit=True) as conn:
         conn.execute("CREATE TABLE IF NOT EXISTS seats (id int PRIMARY KEY, remaining bigint)")
         for i in range(1, TRAINS + 1):
-            conn.execute(
-                "INSERT INTO seats VALUES (%s, %s) ON CONFLICT (id) DO NOTHING", (i, SEATS)
-            )
+            conn.execute(r2_db.insert_seat_sql(args.dsn), (i, SEATS))
 
     server = subprocess.Popen(
         [sys.executable, "tools/r2_server.py", "--dsn", args.dsn, "--port", str(args.port)],
@@ -247,13 +247,13 @@ def main() -> int:
         server.wait(timeout=10)
 
     header = [
-        "# R2 calibration run — HTTP + Postgres SELECT FOR UPDATE, two regimes",
+        "# R2 calibration run — HTTP + SELECT FOR UPDATE, two regimes",
         f"# date: {dt.date.today().isoformat()}",
         f"# host: {platform.platform()}, {platform.machine()}, Python {platform.python_version()}",
         f"# harness: tools/calibrate_r2.py ({'--quick' if args.quick else 'full'}: "
         f"{reps} reps, {duration}s per level), server: tools/r2_server.py",
-        "# engine: PostgreSQL 17.10 (Homebrew, throwaway local instance, "
-        "max_connections=450), psycopg 3",
+        f"# engine: {engine_desc} (Homebrew, throwaway local instance, "
+        "max_connections=450)",
         "# STEADY regime excludes each worker's first post-T0 request;",
         "# CONVOY regime is exactly those first requests (synchronized start).",
         "# sharded8 mode: same offered concurrency spread over 8 rows, not 1.",

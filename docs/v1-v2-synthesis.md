@@ -196,6 +196,26 @@ adversarially eroding — bots converge on human shapes.
    scale-dependent and was probed at one population/window regime
    only.
 
+### Addendum (2026-09-01) — the second anchor landed, and it falsified the shape's universality
+
+Threat #1 asked for a second calibration lineage; the ruled anchor
+(MariaDB 12.3.3, same harness, same ladder, 20 reps/level — D11,
+graded in `specs/tatkal-v3/reports/w4-anchor-2026-09-01.md`) came
+back **negative on engine-independence**. Under identical hot-row
+load, Postgres degrades tail-first (p99 ~50× at 8× knee while p50
+grows 3.5×; throughput collapses to ~32% of peak at C = 256) while
+MariaDB queues fairly — p50 and p99 grow together, proportionally,
+with no tail separation (p99 ≈ 1.3× p50 throughout) and throughput
+holding at ~96% of peak. **"Flat median, exploding tail" is a
+property of the Postgres lineage, not of hot-row contention as
+such.** Read every fitted-variant claim in this document as scoped
+to Postgres-like engines; the plateau variant now has a measured
+real-world instance, which upgrades the three-variant bracketing
+(R4.3) from hygiene to the load-bearing frame. One registered
+criterion (DC6-b) was itself mis-calibrated — it is failed by the
+Postgres anchor too — reported as a miss in the graded report, and
+the falsification verdict does not hinge on it.
+
 ## Claim → evidence → v3 gap
 
 | # | Claim | Evidence | What v3 owes it |

@@ -76,6 +76,22 @@ Some `attune-ai` workflows fan out across multiple model calls and can spend mor
 than you expect. Set a spend limit in the Anthropic console before you start
 experimenting, not after.
 
+## Databases for calibration (optional — only for re-running R2/W4)
+
+The calibration harness measures a real HTTP endpoint against a real
+database. Two engines are involved, both run as **throwaway local
+instances** (data dir outside the repo, no service registered):
+
+- **PostgreSQL** — the primary v1 anchor (`tools/calibrate_r2.py`
+  header shows the recipe; Homebrew `postgresql@17`).
+- **MariaDB** — the v3 second anchor (decisions.md D11; Homebrew
+  `mariadb`, driver `PyMySQL` pinned in `requirements.txt`). Recorded
+  here per the no-ad-hoc-installs rule: the project now deliberately
+  depends on a local MariaDB for the W4 anchor run.
+
+You do not need either engine to run the simulator or its tests —
+only to re-run the calibration measurements.
+
 ## Redis (optional)
 
 `attune-ai` has memory features backed by Redis. **You do not need Redis for this
