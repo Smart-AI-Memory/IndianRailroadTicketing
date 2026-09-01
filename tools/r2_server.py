@@ -23,6 +23,7 @@ Design notes, load-bearing:
   keeps them distinguishable at the wire level.
 
 Usage:  python3 tools/r2_server.py --dsn postgresql://... [--port 8077]
+        python3 tools/r2_server.py --dsn mysql://root@127.0.0.1:33061/r2   (v3 D11 anchor)
 """
 
 from __future__ import annotations
@@ -33,17 +34,17 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-import psycopg
+import r2_db
 
 _tls = threading.local()
 DSN = ""
 
 
-def _db() -> psycopg.Connection:
+def _db():
     """One connection per server thread, created lazily on first use."""
     conn = getattr(_tls, "conn", None)
     if conn is None or conn.closed:
-        conn = psycopg.connect(DSN, autocommit=False)
+        conn = r2_db.connect(DSN, autocommit=False)
         _tls.conn = conn
     return conn
 
@@ -99,7 +100,7 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as exc:  # noqa: BLE001 — any failure is a hard error to the client
             try:
                 conn.rollback()
-            except psycopg.Error:
+            except Exception:
                 pass
             self._reply(500, {"ok": False, "reason": type(exc).__name__})
 
@@ -107,7 +108,7 @@ class Handler(BaseHTTPRequestHandler):
 def main() -> int:
     global DSN
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--dsn", required=True, help="Postgres DSN")
+    ap.add_argument("--dsn", required=True, help="DSN (postgresql://... or mysql://...)")
     ap.add_argument("--port", type=int, default=8077)
     args = ap.parse_args()
     DSN = args.dsn

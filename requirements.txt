@@ -1,3 +1,4 @@
 attune-ai==14.1.0
 psycopg[binary]==3.3.4  # R2 calibration harness (tools/r2_server.py, tools/calibrate_r2.py)
+PyMySQL==1.1.2  # v3 second-anchor calibration against MariaDB (tools/r2_db.py, D11)
 pytest==9.1.1  # tatkal_sim test suite (tasks.md P0+)
