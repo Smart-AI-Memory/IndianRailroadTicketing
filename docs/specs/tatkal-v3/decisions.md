@@ -503,3 +503,28 @@ silently drift from the population. Full suite: 161 green.
 **Binds:** W2 exit — W3 (honest-cost metrics, floor document,
 multiplicity inventory, bar-cell coverage table) may begin; Gate B
 follows W3.
+
+## D22 — W3 complete: the Gate B packet exists
+
+**Date:** 2026-09-01 · **Decided by:** moderator execution under the
+approved ladder; result entry · **Status:** final
+
+W3.1: honest-cost readout implemented (`measure/metrics_v3.py`) —
+both clocks plus each arm's actual price (verification wait,
+verify-missed, stake exposure, registration burden, ineligible),
+per cohort, never only aggregate; hand-computed synthetic-log test
+green. W3.2: floor document generated from model constants
+(`tools/v3_floors.py` → `floors.md`) with the D4.2 enumeration per
+family, per-metric naming per D17.3, and the amended
+max(burst, winner-drain) rule applied — winner drain (14.195 ms)
+dominates the burst floor at c_push ≤ 0.5, exactly the regime the
+D18.2 amendment exists for. W3.3: multiplicity inventory — **47
+primary-metric comparisons** across six families; Holm within family
+proposed. W3.4: bar-cell coverage table — six proposed bars
+(B1–B6), zero uncovered, mapped to the 63-cell plan. Full suite:
+162 green.
+
+**Binds:** W3 exit. Everything Gate B needs exists; Gate B (a chair
+decision, not a task) is next: guard values, bar constants, and the
+multiplicity policy register by chair entry over exactly this
+packet.
