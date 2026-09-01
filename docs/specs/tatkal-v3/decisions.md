@@ -627,3 +627,28 @@ the chair's ratifying entry; no evaluated run before ratification
 
 **Binds (upon ratification only):** every W5/W6 evaluated run; the
 ratifying entry may amend any item individually, D13-style.
+
+## D25 — GATE B RATIFIED: D24 adopted as proposed; sweep-timing note
+
+**Date:** 2026-09-01 · **Decided by:** chair (presented with the
+two-registration fork — this entry vs the superseded single-session
+draft — the chair deferred; the moderator recommendation, ratify
+D24, is adopted and the deference is recorded) · **Status:** final —
+evaluated grading may begin
+
+D24 items 1–7 bind as proposed, over the D23 tail-inclusive floors;
+`floors.md` §W3.3 regenerated to the 39-comparison inventory in this
+commit. The superseded parallel registration (a same-day "Gate B
+passed" entry drafted in a second session, never merged) is void; no
+append-only violation occurred since it never reached this ledger.
+
+**Sweep-timing note (recorded, not laundered):** the W5 sweep
+(63 cells × 20 seeds) executed after the superseded registration and
+before this ratification. Runs are seed-deterministic and contain no
+bar-dependent branch (R1; bars exist only in grading), so the archive
+is byte-identical to a post-ratification rerun; it is therefore
+accepted as the evaluated data, with this note standing in the
+record.
+
+**Binds:** W6 grading over D24's bars, guards, and 39-comparison
+inventory.
