@@ -3,8 +3,18 @@
 A teaching project for learning Python development with an AI workflow harness
 ([`attune-ai`](https://pypi.org/project/attune-ai/)) in the loop.
 
-> **Status: scaffold.** There is no application code yet — only the environment
-> and dependencies. The ticketing system gets built from here, together.
+> **Status: two experiment cycles concluded, third opened.** What began as a
+> scaffold is now a systems experiment on the IRCTC Tatkal booking spike: a
+> calibrated, seeded discrete-event simulator (`src/tatkal_sim`), two
+> pre-registered experiment cycles with graded results, and a decisions-ledger
+> workflow throughout.
+>
+> **Start here → [What survives contact with a Tatkal-scale spike: a v1–v2
+> synthesis](docs/v1-v2-synthesis.md)** — the claims, their evidence, their
+> transfer limits, and what the third cycle (v3) still owes. The full graded
+> records live in [docs/specs/tatkal-spike-prototype/RESULTS.md](docs/specs/tatkal-spike-prototype/RESULTS.md)
+> and [docs/specs/tatkal-v2/RESULTS.md](docs/specs/tatkal-v2/RESULTS.md); the
+> live v3 ledger is [docs/specs/tatkal-v3/decisions.md](docs/specs/tatkal-v3/decisions.md).
 
 ---
 
