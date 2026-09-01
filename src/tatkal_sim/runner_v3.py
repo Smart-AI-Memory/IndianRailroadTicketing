@@ -24,7 +24,7 @@ from tatkal_sim.core import Clock, EventQueue, RngStreams
 from tatkal_sim.measure import metrics as metrics_mod
 from tatkal_sim.measure.fitting import FIT_JSON, knee_variant, load_fit
 from tatkal_sim.model.server import Server
-from tatkal_sim.model.users import ClientConfig
+from tatkal_sim.model.users import ClientConfig, Outcome
 from tatkal_sim.model.users_v2 import V2ClientEngine
 from tatkal_sim.model.workload_v2 import (
     OPERATING_WORKLOAD_V2,
@@ -106,6 +106,23 @@ def run_arm_v3_once(arm: V3Arm, seed: int) -> dict:
         log,
         policy=_policy(arm, seats_total),
     )
+
+    if workload_kind == "a3":
+        # registration one-shots are costed server work (v2 M1 carry;
+        # design §A3, B6's measured stream): submit + completion logged
+        # so the deadline-surface drain is derivable per registrant
+        def _reg_work(uid: int) -> None:
+            log.append(("reg_submit", clock.now(), uid))
+            server.submit_light_at(
+                uid,
+                Outcome.QUEUE_POSITION,
+                lambda o, u=uid: log.append(("reg_done", clock.now(), u)),
+                server.cfg.status_cost_factor,
+            )
+
+        for i in intents:
+            if i.t_register is not None:
+                queue.schedule_at(i.t_register, lambda uid=i.user_id: _reg_work(uid))
 
     engine = V2ClientEngine(
         clock,

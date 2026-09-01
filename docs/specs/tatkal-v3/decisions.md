@@ -652,3 +652,42 @@ record.
 
 **Binds:** W6 grading over D24's bars, guards, and 39-comparison
 inventory.
+
+## D26 — W6 complete: graded record produced; registration misses recorded
+
+**Date:** 2026-09-01 · **Decided by:** moderator execution under the
+approved ladder; result entry (RESULTS.md pending chair sign-off) ·
+**Status:** final
+
+W6.1: every D24 bar and guard graded over the 39-comparison
+inventory; RESULTS.md carries the per-clause grading of the expected
+result (one confirmation, three refutations, one reversal). W6.2:
+the honest-framing section names who each mitigation prices out, per
+cohort, with A2's unmodelled regressive axis stated as such. W6.3:
+`v4-starter.md` drafted from the graded record.
+
+Registration misses recorded, never adjusted:
+
+1. **B1 p = 0 guard mis-calibrated** — the ≤ 1.05 hard-median fails
+   cells bit-identical to the v2 record (medians 1.09–1.12; ~180
+   controllers of sampling noise). Fourth formulas-vs-semantics
+   instance; v4 starter carries the repair (CI-based, v2 P1 style).
+2. **B3/B4 floors are best-case arithmetic under congested
+   reality** — missed 0/12 and 0/8 with the record's own cells
+   equally far above; the gap is structural and the informative
+   quantities are the family deltas. v4 starter carries the
+   congestion-aware-bar rule.
+3. One grader implementation detail corrected before grading was
+   accepted: B1's p = 0 metric is the aggregate controller-level
+   advantage (the D5 metric), not a per-strategy max (unregistered
+   choice that fails on noise alone).
+
+Headline (chair sign-off pending): identity-pricing does not
+honestly reclaim the lottery at plausible prices; **paced drain with
+tolerant re-entry recovers both inventory (+50%, CI excludes zero)
+and fairness (F guard passes)** — v2's M3 negative was a p_retry = 0
+artifact. B2's pass at the 62%-honest-exclusion cell shows latency
+guards are blind to exclusion harm; the per-cohort readout caught it.
+
+**Binds:** the graded record as the v3 factual baseline once the
+chair signs off; v4 seeding via v4-starter.md.
