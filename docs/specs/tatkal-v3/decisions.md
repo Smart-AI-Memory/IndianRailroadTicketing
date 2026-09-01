@@ -408,3 +408,19 @@ place on its first use.
 
 **Binds:** DC2/DC6 as amended; W1.3/W3.2/W5.5 acceptance as amended.
 The Gate B path is now open.
+
+## D18 — W0 regression anchor complete
+
+**Date:** 2026-09-01 · **Decided by:** moderator execution under the
+approved ladder; result entry · **Status:** final
+
+W0.1: the full v1+v2 suite passes on the v3 tree, untouched — 147
+tests, including the v2 golden-snapshot anchor. W0.2: the designated
+v2 arm (M2, p = 0.1, fitted, 20 seeds) reproduces **bit-identically**
+against the archived v2 record under the exact tolerance (v2 D16,
+carried by R1). Graded report: `reports/w0-regression-2026-09-01.md`.
+Environment drift found and repaired exactly (venv missing the
+pinned pytest; reinstalled 9.1.1) — the starter-queued CI workflow
+is the mechanical fix for this class.
+
+**Binds:** W0 exit — W1 (priced-entry machinery) may begin.
