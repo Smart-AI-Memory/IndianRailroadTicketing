@@ -528,3 +528,102 @@ proposed. W3.4: bar-cell coverage table — six proposed bars
 decision, not a task) is next: guard values, bar constants, and the
 multiplicity policy register by chair entry over exactly this
 packet.
+
+## D23 — light-work floors made tail-inclusive (pre-Gate-B review, Finding 1)
+
+**Date:** 2026-09-01 · **Decided by:** chair (ruling on Finding 1 of
+the pre-Gate-B review of the D22 packet) · **Status:** final
+
+The W3.2 generator used two mean-app-time definitions: heavy-work
+floors (winner drain, M3 tranches) tail-inclusive (0.1419 ms), but
+`light_drain` — the A1 verification table, the M1/M2 burst
+components, and the A3 registration floor — silently tail-free
+(0.0919 ms), while the simulator's light items go through
+`_app_time()` and DO sample the R3.7 heavy-tail mixture
+(`server.py`). Floors therefore understated the sim's own expected
+physics by 1.544× on exactly the tables guards would be set against
+— undeclared, and the third instance of the D17 meta-note failure
+class (registered formulas not computed against their own
+semantics). The review caught it before any guard was registered —
+the v1 bars-near-mis-derived-floors retro item, discharged this time.
+
+**Ruled:** floors use the same service law the simulator runs.
+`light_drain` now includes `tail_p × tail_mean`; `floors.md`
+regenerated in this entry's commit (A1 ×1.544, e.g. c_verify = 1,
+p = 0: 123.2 → 190.2 ms; M2 c_push = 0.5 crossover now
+burst-dominated at 18.027 ms; A3 final decile 11.162 → 17.232 ms;
+heavy-work floors unchanged — they were already tail-inclusive).
+The document now also declares the tail rule and states WHY floors
+are identical across fitted/plateau/cliff (below-knee parameters
+shared; variants differ only above the knee, which floors exclude —
+review Finding 2, presentational). Full suite: 162 green.
+
+**Binds:** `floors.md` as regenerated; every floor distance read at
+Gate B reads from these tables.
+
+## D24 — GATE B DRAFT: bars, guards, multiplicity — proposed for chair ratification
+
+**Date:** 2026-09-01 · **Decided by:** DRAFT — moderator proposal
+over the D22 packet as amended by D23; informed by the pre-Gate-B
+review's Findings 3–5 · **Status:** PROPOSED — binds nothing until
+the chair's ratifying entry; no evaluated run before ratification
+
+1. **Bars (GB1 carry — floor-relative 3×, per clock/grid point;
+   variant-invariant per D23):**
+   - **B3:** A1 `verify_done` last-completion ≤ 3× the aggregate-
+     drain floor at each (c_verify, p) cell. Per D17.3 the aggregate
+     floor never grades a wait distribution: per-identity A1 pool
+     wait is REPORT-ONLY in v3 — declared here, not omitted.
+   - **B4:** post-event resolution p99 ≤ 3× the amended
+     max(burst, winner-drain) floor per c_push point (v2 D17.1
+     carry, now over D23 floors).
+   - **B5:** M3 recovery — **primary metric: inventory sold** vs the
+     p_retry = 0 record cell, graded by the improvement-claim rule
+     (item 6); whole-run F-ratio is a GUARD (≤ 5% regression, GB2
+     carry), not a comparison; retry amplification report-only
+     (Finding 5 ruling).
+   - **B6:** A3 registration-path p99 during the final decile ≤ 3×
+     the A3 final-decile floor (17.232 ms → bar 51.696 ms).
+2. **Fairness (B1, D5 metric carry):** hard guards under mitigation —
+   identity-split controller advantage ≤ m (= 5) at p > 0 (GB2b
+   no-super-linear carry) and ≤ 1.05 at p = 0, graded per arm-cell
+   as a GUARD (GB2 carry). The p = 0 gradings REPLACE the eight
+   p = 0 reclaim comparisons in the W3.3 inventory (Finding 3
+   ruling: nothing to reclaim at p = 0; they were null controls
+   costing Holm power). Fairness RECLAIM is the comparison family:
+   advantage under mitigation vs the v2 unmitigated record at the
+   same p, Holm within family; headline claims via item 6.
+3. **Honest-cost guards (B2 — per-arm gates, per cohort):**
+   - **A1:** honest p99 absolute-TTDA regression vs unmitigated M2
+     same-p ≤ 3× the A1 aggregate verification floor at that cell
+     (the arm's injected work, priced at the bar family's 3×).
+     **Pre-registered expected breach at c_verify = 4** — DC1
+     saturates the window by construction; the graded question
+     there is the degradation mode (clean `verify-missed` vs
+     contention collapse), not the guard (D20 no-bite pattern;
+     Finding 4 ruling).
+   - **A2:** no added in-window server work → ≤ 5% honest p99 TTDA
+     regression (GB2 no-regression carry); stake exposure
+     report-only per design.
+   - **A3:** registration work is pre-window and time-disjoint →
+     in-window guard ≤ 5%; the deadline surface itself is graded by
+     B6.
+4. **Multiplicity (GB3 carry):** Holm–Bonferroni within family over
+   the closed inventory AS AMENDED by items 1–2: A1 reclaim 9,
+   A2 reclaim 12, A3 reclaim 3, A3 deadline-vs-uniform delta 4
+   (all p — an honest-surface result, R5.1, unchanged), R3 bursts 8,
+   M3 recovery 3 = **39 primary comparisons** (was 47; the eight
+   p = 0 reclaim comparisons became per-arm B1 guard gradings).
+   `floors.md` §W3.3 regenerates to match in the ratifying commit.
+5. **Reproduction tolerance:** confirmed — W0 reproduced the
+   designated v2 arm bit-identically under the registered tolerance
+   (D18).
+6. **Improvement-claim rule carries v1/v2:** ≥ 10% on the primary
+   metric, paired 95% CI excluding zero, ≤ 5% regression in
+   goodput/fairness.
+7. **Coverage:** the W3.4 bar-cell table (floors.md as regenerated)
+   is the attached closed list — six bars, zero uncovered, the
+   63-cell plan and 1260-run budget unchanged.
+
+**Binds (upon ratification only):** every W5/W6 evaluated run; the
+ratifying entry may amend any item individually, D13-style.
