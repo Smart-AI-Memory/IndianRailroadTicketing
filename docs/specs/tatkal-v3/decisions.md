@@ -256,8 +256,65 @@ Logged 2026-09-01 from round table `q-project-critical-review-001`
 - ~~OQ2 (Antigravity, msg 5)~~ — resolved by **D9**.
 - ~~OQ3 (Claude, msg 7)~~ — resolved by **D8**, as corrected by
   **D10**.
-- **OQ4 (from D10):** which second calibration anchor implements
-  D8's intent — a second engine on the same machine (MySQL/MariaDB
-  via the existing R2 harness; tests engine-independence), a second
-  machine on the same engine (tests hardware transfer), or both?
-  Requires a chair ruling on the infra install either way.
+- ~~OQ4 (from D10)~~ — resolved by **D11**.
+
+## D11 — second anchor: MariaDB/MySQL behind the existing R2 harness
+
+**Date:** 2026-09-01 · **Decided by:** chair (ruling on OQ4;
+moderator recommendation adopted) · **Status:** final
+
+The D8/D10 second calibration anchor is a **second engine on the same
+machine**: MariaDB (or MySQL) behind the existing R2 HTTP harness
+(`tools/r2_server.py` / `tools/calibrate_r2.py`), same concurrency
+ladder, ≥ 3 reps. Rationale: it directly tests engine-independence of
+the flat-median / exploding-tail shape — the claim v3 leans on —
+with one local install and no new hardware; the synthesis already
+disclaims absolute constants, so hardware transfer is the weaker
+marginal question. Shape-comparison criteria are pre-registered in
+v3 requirements (R9) before the run; the result is reported either
+way and lands as an addendum to `docs/v1-v2-synthesis.md` per D8.
+The MariaDB install is recorded in the README when it happens
+(no-ad-hoc-installs discipline).
+
+**Binds:** v3 requirements R9; the anchor task in v3 tasks.md.
+
+## D12 — requirements ratified
+
+**Date:** 2026-09-01 · **Decided by:** chair · **Status:** final
+
+`requirements.md` R1–R10 are ratified as authored. The abuse-pricing
+statement obligation (R2), the bar-cell coverage and floor
+completeness bindings (R8/D4), the R9 anchor criteria procedure, and
+the first-class honest-cost readout (Honest framing) all bind.
+UNSET constants remain traceable to the entries that must fix them
+(Gate B for bars/guards; D13 below for the design constants).
+
+**Binds:** the v3 experiment's scope and procedure.
+
+## D13 — design approved; DC1–DC6 registered as proposed
+
+**Date:** 2026-09-01 · **Decided by:** chair · **Status:** final
+
+`design.md` is approved. DC1–DC6 are registered as proposed, none
+amended: c_verify ∈ {¼, 1, 4} × app time (DC1); the deterministic
+expected-value deposit entry rule (DC2); d ∈ {0.1, 0.5, 2} × V
+(DC3); the deadline-spike registration profile — 40% uniform + 60%
+final-10%, σ_reg = σ_T0, uniform as labelled variant (DC4);
+p_retry ∈ {0, 0.25, 0.5, 1.0} (DC5); anchor shape criteria — knee
+exists, p50 ≤ 2× and p99 ≥ 10× at 8× knee (DC6). The §Cell-budget
+table (59 cells / 1,180 runs) is the planning envelope; the binding
+cell list is tasks.md as gated at Gate B.
+
+**Binds:** every v3 mechanism constant named above.
+
+## D14 — task ladder approved; ladder active
+
+**Date:** 2026-09-01 · **Decided by:** chair · **Status:** final
+
+`tasks.md` W0–W6 is approved and the ladder is active. Gate B
+remains a chair decision standing between W3 and every evaluated
+run; the W3.4 bar-cell coverage table is a gate blocker (D4.1). W4
+(anchor run) is authorized to run ahead of W1–W3, its MariaDB
+install to be recorded in the README when it happens (D11).
+
+**Binds:** v3 execution order and gates.
