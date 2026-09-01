@@ -38,7 +38,7 @@ from tatkal_sim.config import FidelityConfig
 from tatkal_sim.core.rng import RngStreams
 from tatkal_sim.model.workload import Intent, WorkloadConfig, _zipf_weights
 
-ARM_KINDS = ("eng", "m1", "m2", "m3")
+ARM_KINDS = ("eng", "m1", "m2", "m3", "a3")
 
 #: D13.3 base mix — never varies except mimic<->identity-split under p.
 BASE_MIX = {"race": 60, "mimic": 30, "camp": 30, "identity_split": 30}
@@ -63,13 +63,20 @@ class V2WorkloadConfig(WorkloadConfig):
     r_reg: float = 0.8  # swept {0.5, 0.8, 0.95}
     abuse_p: float = 0.2  # swept {0, 0.1, 0.2, 0.4} in M2 cells
     m_identities: int = 5  # fixed (D13.4)
+    # v3 DC4 (a3 arm only): human registration arrival profile —
+    # "deadline" = 40% uniform over W + 60% aimed at the window close
+    # with the T0 spike machinery (sigma_reg = sigma_t0); "uniform" is
+    # the labelled variant (v2 M1's model) so the deadline delta is
+    # itself a result (R5.1).
+    reg_profile: str = "deadline"
 
 
 def _effective_strategy(base: str, arm_kind: str) -> str:
-    """D13.3 degenerate-form rule."""
-    if base == "camp" and arm_kind not in ("m1", "m3"):
+    """D13.3 degenerate-form rule (a3 is M2-family for the draw and
+    M1-family for the window — both specialist strategies stay live)."""
+    if base == "camp" and arm_kind not in ("m1", "m3", "a3"):
         return "race"
-    if base == "identity_split" and arm_kind != "m2":
+    if base == "identity_split" and arm_kind not in ("m2", "a3"):
         return "mimic"
     return base
 
@@ -77,7 +84,7 @@ def _effective_strategy(base: str, arm_kind: str) -> str:
 def _strategy_counts(cfg: V2WorkloadConfig, arm_kind: str) -> dict[str, int]:
     """Base mix, with the M2 abuse sweep's mimic<->identity-split shift."""
     counts = dict(BASE_MIX)
-    if arm_kind == "m2":
+    if arm_kind in ("m2", "a3"):
         n_split = round(cfg.abuse_p * cfg.n_bots)
         if n_split > BASE_MIX["identity_split"] + BASE_MIX["mimic"]:
             raise ValueError(f"abuse_p={cfg.abuse_p} exceeds mimic pool")
@@ -143,17 +150,25 @@ def generate_intents_v2(
             t = cfg.t0 + arrivals.uniform(0.0, cfg.spread_window)
         human_slots.append(("t0_humans", t))
 
-    # M1: exactly round(r_reg * n) registrants among pre_fire + t0_humans
+    # M1/A3: exactly round(r_reg * n) registrants among pre_fire + t0_humans
     reg_flags = [False] * len(human_slots)
-    if arm_kind == "m1":
+    if arm_kind in ("m1", "a3"):
         n_reg = round(cfg.r_reg * len(human_slots))
         for idx in registration.sample(range(len(human_slots)), n_reg):
             reg_flags[idx] = True
 
+    def _human_t_register() -> float:
+        # m1: uniform over W (v2 D13.6, unchanged). a3: DC4 profile —
+        # 40% uniform, 60% deadline-concentrated (|N(0, sigma_t0)|
+        # before the window close); "uniform" variant reuses the m1 rule.
+        if arm_kind == "a3" and cfg.reg_profile == "deadline":
+            if registration.random() < 0.4:
+                return cfg.t0 - registration.uniform(0.0, cfg.reg_window)
+            return cfg.t0 - min(abs(registration.gauss(0.0, cfg.sigma_t0)), cfg.reg_window)
+        return cfg.t0 - registration.uniform(0.0, cfg.reg_window)
+
     for (cohort, t), registered in zip(human_slots, reg_flags):
-        t_reg = None
-        if registered:
-            t_reg = cfg.t0 - registration.uniform(0.0, cfg.reg_window)
+        t_reg = _human_t_register() if registered else None
         add(draw_pool(), cohort, t, t_register=t_reg)
 
     # ---- bots: D13.3 mix, strategy generation order fixed ----
@@ -175,19 +190,34 @@ def generate_intents_v2(
                     # re-arrival is client behaviour (V3.3).
                     t = cfg.t0 + arrivals.uniform(0.0, cfg.bot_window)
                     t_reg = None
-                    if arm_kind == "m1":
+                    if arm_kind in ("m1", "a3"):
                         t_reg = (
                             cfg.t0
                             - cfg.reg_window
                             + registration.uniform(0.0, 0.05 * cfg.reg_window)
                         )
                     add(draw_pool(), "bots", t, strategy="camp", t_register=t_reg)
-                else:  # identity_split (M2 only): m entries, one controller
+                else:  # identity_split (M2-family): m entries, one controller
                     controller = uid
                     pool = draw_pool()
                     for _ in range(cfg.m_identities):
                         t = cfg.t0 + abs(arrivals.gauss(0.0, 0.2))
-                        add(pool, "bots", t, strategy="identity_split", controller=controller)
+                        # a3: the patient abuser pre-registers every
+                        # identity, uniform over W (flagged constant —
+                        # chair entry owed at the W2 gate)
+                        t_reg = (
+                            cfg.t0 - registration.uniform(0.0, cfg.reg_window)
+                            if arm_kind == "a3"
+                            else None
+                        )
+                        add(
+                            pool,
+                            "bots",
+                            t,
+                            strategy="identity_split",
+                            controller=controller,
+                            t_register=t_reg,
+                        )
 
     # ---- background: v1 semantics, never registers ----
     for _ in range(cfg.n_background):

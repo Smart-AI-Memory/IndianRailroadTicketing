@@ -424,3 +424,32 @@ pinned pytest; reinstalled 9.1.1) — the starter-queued CI workflow
 is the mechanical fix for this class.
 
 **Binds:** W0 exit — W1 (priced-entry machinery) may begin.
+
+## D19 — W1 priced-entry machinery complete
+
+**Date:** 2026-09-01 · **Decided by:** moderator execution under the
+approved ladder; result entry · **Status:** final
+
+W1.1–W1.4 landed as `strategies/mitigation.py` (three policies over
+`PricedLotteryPool`), the `a3` workload branch (DC4 deadline profile
++ uniform variant), and `runner_v3.py`. Acceptance held: policy=None
+is **bit-identical** to the v2 M2 arm (log, metrics, intents — W1.1);
+verification overload degrades to clean `verify-missed` with zero
+lost intents and derivable per-identity wait (W1.2); the
+D17-corrected k* rule is monotone with the d = 0 cell refused in
+favour of pass-through, and the forfeiture ledger balances —
+including refunds to identities whose client went inactive before
+the draw: the bond follows the stake, not the session (W1.3); the
+deadline profile concentrates ≥ 55% of registrations in the final
+decile where the uniform variant shows ~10%, generation is
+deterministic, and the `ineligible` stream works end-to-end (W1.4).
+Full suite: 155 tests green; existing v1/v2 physics untouched.
+
+Two implementation constants flagged for chair ratification at the
+W2 gate (D1 discipline — recorded, not silently adopted):
+1. a3 patient-abuser registration timing = uniform over W;
+2. the deposit refund-at-draw rule for inactive-client stakes
+   (adopted above as the D17-consistent reading).
+
+**Binds:** W1 exit — W2 (arm assembly + abuse-pricing statements)
+may begin.
