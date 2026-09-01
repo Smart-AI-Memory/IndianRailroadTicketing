@@ -349,3 +349,22 @@ either-way obligation.
 **Binds:** interpretation scope of fitted-variant claims in v3
 reporting; the W4 exit criterion is met (two anchor lineages — with
 a recorded falsification, the mandatory acceptable outcome).
+
+## D16 — cross-model review of the spec documents before Gate B
+
+**Date:** 2026-09-01 · **Decided by:** chair (2026-09-01 retro, item
+5 — adopting the moderator's pushback against his own same-session
+D12–D14 batch ratification) · **Status:** final
+
+Before the Gate B entry is drafted, the ratified v3 spec documents
+(requirements.md, design.md, tasks.md) receive a **cross-model
+second-opinion review** (`/cross-review` — a different model than
+the authoring one; advisory, board-recorded). Rationale: author,
+recommender, and ratifier were one mind on one afternoon — the
+closed-review-loop weakness the `q-project-critical-review-001`
+round table named. The review is advisory; findings are triaged by
+the chair and any resulting amendments get their own entries. D12–
+D14 stand — this hedges them rather than reopening them.
+
+**Binds:** Gate B sequencing — no Gate B entry before the
+cross-review's findings are triaged.
