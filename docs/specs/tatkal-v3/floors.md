@@ -6,6 +6,14 @@ states its distance from the relevant floor, per metric (D17.3).
 
 Population: v2 D13 carried verbatim (D3); seats = 200 (8 pools x 25).
 
+All mean-app-time terms are TAIL-INCLUSIVE (D23): every server
+work item — heavy or light — samples the R3.7 heavy-tail mixture,
+so floors use the same service law the simulator runs.
+
+Floors are identical across fitted/plateau/cliff BY CONSTRUCTION:
+the variants share all below-knee service parameters and differ
+only above the knee — congestion, which floors exclude (D23).
+
 ## Drain-component enumeration (D4 rule 2)
 
 - **A1 verification drain** includes: one light work item per
@@ -52,16 +60,16 @@ per-identity floor (D17.3).
 
 | c_verify \\ p | 0.0 | 0.1 | 0.2 | 0.4 |
 |---|---|---|---|---|
-| 0.25 | 30.8 ms | 31.5 ms | 32.2 ms | 33.6 ms |
-| 1.0 | 123.2 ms | 126.0 ms | 128.7 ms | 134.2 ms |
-| 4.0 | 492.8 ms | 503.9 ms | 514.9 ms | 537.0 ms |
+| 0.25 | 47.6 ms | 48.6 ms | 49.7 ms | 51.8 ms |
+| 1.0 | 190.2 ms | 194.5 ms | 198.7 ms | 207.2 ms |
+| 4.0 | 760.8 ms | 777.9 ms | 794.9 ms | 829.0 ms |
 
 ### M1/M2 post-event floors per c_push (amended: max(burst, winner drain))
 
 | arm (losers) | 0.25 | 0.5 | 1.0 | 2.0 |
 |---|---|---|---|---|
-| M1 (1824) | 14.195 ms | 14.195 ms | 16.771 ms | 33.542 ms |
-| M2 p=0.1 (2540) | 14.195 ms | 14.195 ms | 23.354 ms | 46.709 ms |
+| M1 (1824) | 14.195 ms | 14.195 ms | 25.891 ms | 51.782 ms |
+| M2 p=0.1 (2540) | 14.195 ms | 18.027 ms | 36.054 ms | 72.109 ms |
 
 ### M3 (all p_retry points — floors are p_retry-invariant, see enumeration)
 
@@ -72,7 +80,7 @@ per-identity floor (D17.3).
 
 ### A3 registration surface (DC4 deadline profile)
 
-| final-decile registration drain | 11.162 ms | ~60% of registrants x status cost / workers |
+| final-decile registration drain | 17.232 ms | ~60% of registrants x status cost / workers |
 
 ## Variant: plateau
 
@@ -90,16 +98,16 @@ per-identity floor (D17.3).
 
 | c_verify \\ p | 0.0 | 0.1 | 0.2 | 0.4 |
 |---|---|---|---|---|
-| 0.25 | 30.8 ms | 31.5 ms | 32.2 ms | 33.6 ms |
-| 1.0 | 123.2 ms | 126.0 ms | 128.7 ms | 134.2 ms |
-| 4.0 | 492.8 ms | 503.9 ms | 514.9 ms | 537.0 ms |
+| 0.25 | 47.6 ms | 48.6 ms | 49.7 ms | 51.8 ms |
+| 1.0 | 190.2 ms | 194.5 ms | 198.7 ms | 207.2 ms |
+| 4.0 | 760.8 ms | 777.9 ms | 794.9 ms | 829.0 ms |
 
 ### M1/M2 post-event floors per c_push (amended: max(burst, winner drain))
 
 | arm (losers) | 0.25 | 0.5 | 1.0 | 2.0 |
 |---|---|---|---|---|
-| M1 (1824) | 14.195 ms | 14.195 ms | 16.771 ms | 33.542 ms |
-| M2 p=0.1 (2540) | 14.195 ms | 14.195 ms | 23.354 ms | 46.709 ms |
+| M1 (1824) | 14.195 ms | 14.195 ms | 25.891 ms | 51.782 ms |
+| M2 p=0.1 (2540) | 14.195 ms | 18.027 ms | 36.054 ms | 72.109 ms |
 
 ### M3 (all p_retry points — floors are p_retry-invariant, see enumeration)
 
@@ -110,7 +118,7 @@ per-identity floor (D17.3).
 
 ### A3 registration surface (DC4 deadline profile)
 
-| final-decile registration drain | 11.162 ms | ~60% of registrants x status cost / workers |
+| final-decile registration drain | 17.232 ms | ~60% of registrants x status cost / workers |
 
 ## Variant: cliff
 
@@ -128,16 +136,16 @@ per-identity floor (D17.3).
 
 | c_verify \\ p | 0.0 | 0.1 | 0.2 | 0.4 |
 |---|---|---|---|---|
-| 0.25 | 30.8 ms | 31.5 ms | 32.2 ms | 33.6 ms |
-| 1.0 | 123.2 ms | 126.0 ms | 128.7 ms | 134.2 ms |
-| 4.0 | 492.8 ms | 503.9 ms | 514.9 ms | 537.0 ms |
+| 0.25 | 47.6 ms | 48.6 ms | 49.7 ms | 51.8 ms |
+| 1.0 | 190.2 ms | 194.5 ms | 198.7 ms | 207.2 ms |
+| 4.0 | 760.8 ms | 777.9 ms | 794.9 ms | 829.0 ms |
 
 ### M1/M2 post-event floors per c_push (amended: max(burst, winner drain))
 
 | arm (losers) | 0.25 | 0.5 | 1.0 | 2.0 |
 |---|---|---|---|---|
-| M1 (1824) | 14.195 ms | 14.195 ms | 16.771 ms | 33.542 ms |
-| M2 p=0.1 (2540) | 14.195 ms | 14.195 ms | 23.354 ms | 46.709 ms |
+| M1 (1824) | 14.195 ms | 14.195 ms | 25.891 ms | 51.782 ms |
+| M2 p=0.1 (2540) | 14.195 ms | 18.027 ms | 36.054 ms | 72.109 ms |
 
 ### M3 (all p_retry points — floors are p_retry-invariant, see enumeration)
 
@@ -148,7 +156,7 @@ per-identity floor (D17.3).
 
 ### A3 registration surface (DC4 deadline profile)
 
-| final-decile registration drain | 11.162 ms | ~60% of registrants x status cost / workers |
+| final-decile registration drain | 17.232 ms | ~60% of registrants x status cost / workers |
 
 ## Multiplicity inventory (W3.3)
 

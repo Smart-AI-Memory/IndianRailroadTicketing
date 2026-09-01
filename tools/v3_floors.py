@@ -53,7 +53,9 @@ def pool_identities(p: float) -> int:
 def light_drain(scfg, n_items: int, cost_factor: float) -> float:
     if cost_factor <= 0 or n_items <= 0:
         return 0.0
-    mean_app = math.exp(scfg.app_mu + scfg.app_sigma**2 / 2)
+    # Tail-inclusive (D23): light items go through _app_time(), which
+    # samples the R3.7 heavy-tail mixture — same mean as rates().
+    mean_app = math.exp(scfg.app_mu + scfg.app_sigma**2 / 2) + scfg.tail_p * scfg.tail_mean
     return n_items * cost_factor * mean_app / scfg.workers
 
 
@@ -69,6 +71,14 @@ def main() -> None:
         "states its distance from the relevant floor, per metric (D17.3).",
         "",
         "Population: v2 D13 carried verbatim (D3); seats = 200 (8 pools x 25).",
+        "",
+        "All mean-app-time terms are TAIL-INCLUSIVE (D23): every server",
+        "work item — heavy or light — samples the R3.7 heavy-tail mixture,",
+        "so floors use the same service law the simulator runs.",
+        "",
+        "Floors are identical across fitted/plateau/cliff BY CONSTRUCTION:",
+        "the variants share all below-knee service parameters and differ",
+        "only above the knee — congestion, which floors exclude (D23).",
         "",
         "## Drain-component enumeration (D4 rule 2)",
         "",
