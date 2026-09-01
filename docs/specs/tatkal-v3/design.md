@@ -46,9 +46,14 @@ rejections in the burst (their outcome stream is labelled
   verification demand exceeds the window's total service capacity by
   construction, so the mechanism MUST degrade — what matters is how
   (clean `verify-missed` rejections vs. contention collapse).
-- Verification-pool wait is logged per identity; its floor is the
-  work-conservation arithmetic (entries × c_verify ÷ pool capacity),
-  enumerated per D4 rule 2.
+- Verification-pool wait is logged per identity; floors are named
+  **per metric** (D17, cross-review finding 3): the
+  work-conservation arithmetic (entries × c_verify ÷ pool capacity)
+  is the **aggregate drain floor** — it bounds the last entry's
+  completion and any total-drain bar, and it cannot grade a wait
+  *distribution*. Per-identity wait bars (p50/p99) take
+  queueing-derived floors stated with their registration at Gate B.
+  All components enumerated per D4 rule 2.
 - Abuse-pricing statement (owed per R2 before running, drafted here):
   *an abuser pays m verifications to gain m draw tickets; the
   currency is shared-pool work, so the abuser's price is also
@@ -62,12 +67,17 @@ refunded in full at the draw burst; **an unredeemed winning identity
 forfeits its stake** (one controller redeems at most one seat;
 auto-redeem carries from v2 M1 for the redeemed seat).
 
-- **DC2 — abuser entry rule PROPOSED (deterministic, no learning):**
-  a controller holding m identities enters k of them, where k
-  maximizes `E[seats won | k] · V − E[extra wins | k] · d`, computed
-  under the pool-size expectation the abuser would form from the
-  registered population (all constants public inside the model; no
-  private information). At d = 0 this degenerates to k = m — the v2
+- **DC2 — abuser entry rule (as amended by D17):** a controller
+  holding m identities enters k of them, where k maximizes
+  `P(≥1 win | k) · V − E[(wins − 1)⁺ | k] · d` — a controller
+  redeems at most one seat, so the value term is the probability of
+  at least one win, and the cost term is expected forfeitures on
+  excess wins. (The originally registered form,
+  `E[seats won | k] · V − …`, valued every win at V and
+  double-counted: cross-review finding 1, D17.) Computed under the
+  pool-size expectation the abuser would form from the registered
+  population (all constants public inside the model; no private
+  information). At d = 0 this still degenerates to k = m — the v2
   unmitigated cell, which is the continuity check.
 - **DC3 — `d` grid PROPOSED:** {0.1, 0.5, 2} × V. Below win-value,
   near it, and punitive.
@@ -135,12 +145,18 @@ MariaDB via the same SQL surface — `SELECT … FOR UPDATE` decrement);
 `tools/calibrate_r2.py` runs the identical ladder (concurrency
 1…256, ≥ 3 reps).
 
-- **DC6 — shape criteria PROPOSED** (R9; registered before the run):
-  *confirmed* iff (a) an identifiable knee exists; (b) p50 at 8× knee
-  concurrency ≤ 2× p50 at the knee; (c) p99 at 8× knee ≥ 10× p99 at
-  the knee. Anything else falsifies engine-independence and is
-  reported as such, with the synthesis addendum updating threat #1
-  either way (D8/D11).
+- **DC6 — shape criteria** (R9; registered before the run, amended
+  by D17 after it — the amendments bind future anchor runs, not the
+  2026-09-01 grading): *confirmed* iff (a) a knee exists, **detected
+  as the argmax of median steady-state throughput over the ladder**
+  (the harness's computed rule, now registered — finding 5); (b) p50
+  at 8× knee concurrency ≤ 2× p50 at the knee; (c) p99 at 8× knee
+  ≥ 10× p99 at the knee. **If 8× knee exceeds the ladder cap (256),
+  the criteria are graded at the highest available multiple and the
+  shortfall is recorded in the report** — a registered rule, not a
+  post-hoc choice (finding 4). Anything else falsifies
+  engine-independence and is reported as such, with the synthesis
+  addendum updating threat #1 either way (D8/D11).
 
 ## Measurement
 
