@@ -166,16 +166,17 @@ variant. Gate B registers the count and the correction policy
 
 | family | comparisons | against |
 |---|---|---|
-| A1 fairness reclaim | 12 (3 c_verify x 4 p) | unmitigated M2, same p (v2 record) |
-| A2 fairness reclaim | 16 (4 d x 4 p) | unmitigated M2, same p (v2 record) |
-| A3 fairness reclaim | 4 (deadline profile x 4 p) | unmitigated M2, same p (v2 record) |
+| A1 fairness reclaim | 9 (3 c_verify x 3 p > 0) | unmitigated M2, same p (v2 record) |
+| A2 fairness reclaim | 12 (4 d x 3 p > 0) | unmitigated M2, same p (v2 record) |
+| A3 fairness reclaim | 3 (deadline profile x 3 p > 0) | unmitigated M2, same p (v2 record) |
 | A3 deadline-vs-uniform delta (R5.1) | 4 (per p) | A3 uniform variant |
 | R3 burst bars | 8 (2 arms x 4 c_push) | each arm's c_push=0 record cell |
 | M3 retry recovery | 3 (p_retry > 0) | M3 p_retry=0 record cell |
 
-**Total primary-metric comparisons: 47.** Honest-cost guards are
-per-arm gates, not comparisons (v2 precedent); bracketing-variant
-tables are report-only (R4.3).
+**Total primary-metric comparisons: 39** (D24 item 4: the eight
+p = 0 reclaim rows became per-arm B1 guard gradings — null
+controls cost Holm power). Honest-cost guards are per-arm gates,
+not comparisons; bracketing-variant tables are report-only (R4.3).
 
 ## Bar-cell coverage table (W3.4 — Gate B blocker, D4 rule 1)
 
