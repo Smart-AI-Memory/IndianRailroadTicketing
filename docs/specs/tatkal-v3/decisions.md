@@ -256,8 +256,24 @@ Logged 2026-09-01 from round table `q-project-critical-review-001`
 - ~~OQ2 (Antigravity, msg 5)~~ — resolved by **D9**.
 - ~~OQ3 (Claude, msg 7)~~ — resolved by **D8**, as corrected by
   **D10**.
-- **OQ4 (from D10):** which second calibration anchor implements
-  D8's intent — a second engine on the same machine (MySQL/MariaDB
-  via the existing R2 harness; tests engine-independence), a second
-  machine on the same engine (tests hardware transfer), or both?
-  Requires a chair ruling on the infra install either way.
+- ~~OQ4 (from D10)~~ — resolved by **D11**.
+
+## D11 — second anchor: MariaDB/MySQL behind the existing R2 harness
+
+**Date:** 2026-09-01 · **Decided by:** chair (ruling on OQ4;
+moderator recommendation adopted) · **Status:** final
+
+The D8/D10 second calibration anchor is a **second engine on the same
+machine**: MariaDB (or MySQL) behind the existing R2 HTTP harness
+(`tools/r2_server.py` / `tools/calibrate_r2.py`), same concurrency
+ladder, ≥ 3 reps. Rationale: it directly tests engine-independence of
+the flat-median / exploding-tail shape — the claim v3 leans on —
+with one local install and no new hardware; the synthesis already
+disclaims absolute constants, so hardware transfer is the weaker
+marginal question. Shape-comparison criteria are pre-registered in
+v3 requirements (R9) before the run; the result is reported either
+way and lands as an addendum to `docs/v1-v2-synthesis.md` per D8.
+The MariaDB install is recorded in the README when it happens
+(no-ad-hoc-installs discipline).
+
+**Binds:** v3 requirements R9; the anchor task in v3 tasks.md.
