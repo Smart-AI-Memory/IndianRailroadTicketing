@@ -453,3 +453,53 @@ W2 gate (D1 discipline — recorded, not silently adopted):
 
 **Binds:** W1 exit — W2 (arm assembly + abuse-pricing statements)
 may begin.
+
+## D20 — W2 gate: statements ratified; DC3 gains the d = 15 bracket point
+
+**Date:** 2026-09-01 · **Decided by:** chair (after moderated
+discussion; recommendation adopted) · **Status:** final
+
+1. **Abuse-pricing statements ratified** as drafted in design.md
+   §A1–A3 — on record per R2 before any evaluated run.
+2. **a3 abuser registration timing ratified**: uniform over W. The
+   draw is timing-blind, so the constant shapes registration-surface
+   load only; the deadline stress is carried by the DC4 human cohort.
+3. **Inactive-client stake refunds ratified**: the bond follows the
+   stake, not the session (D17-consistent; the alternative punishes
+   patience limits — regressive per Honest framing).
+4. **DC3 amended: d grid = {0.1, 0.5, 2, 15}.** Computing the
+   D17-corrected DC2 rule against the operating odds
+   (p_win ≈ 200/2800 ≈ 0.071) shows forfeiture-only pricing cannot
+   deter at the original grid: the marginal 5th identity pays for
+   itself until d ≈ 3×V and the marginal 2nd until d ≈ 13×V, so
+   k* = m across {0.1, 0.5, 2} — a foregone negative under R7's
+   equal-effort clause if left unstated. **Pre-registered
+   accordingly:** on {0.1, 0.5, 2} the deposit arm is EXPECTED to
+   show zero abuse deterrence ("forfeiture-only deposits cannot
+   deter at low win probability" is the hypothesis, and confirming
+   it is a finding); d = 15 brackets the computed threshold and is
+   expected to collapse k* to 1. A2 cells grow 12 → 16 (~80 more
+   runs; budget note updated).
+
+**Binds:** DC3 as amended; the A2 grading frame; W2 may proceed.
+
+## D21 — W2 arms assembled; ladder advances to W3
+
+**Date:** 2026-09-01 · **Decided by:** moderator execution under the
+approved ladder; result entry · **Status:** final
+
+All three mitigation arms run as labelled smoke diagnostics per
+variant (never cited as results). Acceptance held: A1 streams present
+across fitted/plateau/cliff (W2.1); the d-grid is monotone with the
+D20 pre-registration confirmed mechanically — k* = m at d = 0.1 and
+k* = 1 at the d = 15 bracket, and in-run stake counts match k* per
+controller exactly (W2.2); the a3 camping-buys-nothing leak
+diagnostic passes over 12 aggregated seeds (camp win rate within
+[0.5, 1.6]× the registered field's — the draw is timing-blind, W2.3).
+Bonus guard: the DC2 public-constants pool expectation matches the
+generated identity count exactly, so the abuser's odds cannot
+silently drift from the population. Full suite: 161 green.
+
+**Binds:** W2 exit — W3 (honest-cost metrics, floor document,
+multiplicity inventory, bar-cell coverage table) may begin; Gate B
+follows W3.

@@ -79,8 +79,12 @@ auto-redeem carries from v2 M1 for the redeemed seat).
   population (all constants public inside the model; no private
   information). At d = 0 this still degenerates to k = m — the v2
   unmitigated cell, which is the continuity check.
-- **DC3 — `d` grid PROPOSED:** {0.1, 0.5, 2} × V. Below win-value,
-  near it, and punitive.
+- **DC3 — `d` grid (as amended by D20):** {0.1, 0.5, 2, 15} × V.
+  Below win-value, near it, punitive, and the **deterrence bracket**:
+  the D17-corrected rule computed at operating odds shows k* = m for
+  all d ≲ 3 and full collapse to k* = 1 only past d ≈ 13, so the
+  original three points are pre-registered as the expected no-bite
+  regime and d = 15 brackets where bite mathematically begins (D20).
 - Honest users are deposit-insensitive (requirements R2.2 default):
   they enter their one identity at any d in the grid. The regressive-
   profile readout (Honest framing) is therefore *modelled* as zero in
@@ -194,13 +198,13 @@ MariaDB via the same SQL surface — `SELECT … FOR UPDATE` decrement);
 | family | cells | seeds | runs |
 |---|---|---|---|
 | A1: c_verify {¼,1,4} × p {0,.1,.2,.4}, fitted | 12 | 20 | 240 |
-| A2: d {.1,.5,2} × p {0,.1,.2,.4}, fitted | 12 | 20 | 240 |
+| A2: d {.1,.5,2,15} × p {0,.1,.2,.4}, fitted | 16 | 20 | 320 |
 | A3: profile {deadline,uniform} × p {0,.1,.2,.4}, fitted | 8 | 20 | 160 |
 | Arm-center 3-variant bracketing (3 arms × center cell × plateau/cliff) | 6 | 20 | 120 |
 | R3 bursts: 2 arms × c_push {¼,½,1,2}, fitted | 8 | 20 | 160 |
 | R3 bracketing at c_push = 1 (2 arms × 2 variants) | 4 | 20 | 80 |
 | M3: p_retry {.25,.5,1} × 3 variants | 9 | 20 | 180 |
-| **total new evaluated runs** | **59** | | **1180** |
+| **total new evaluated runs** | **63** | | **1260** |
 
 v2 record cells (zero/center anchors) are reused, not re-run
 (center-cell rule). ~1.5× the v2 sweep; laptop-scale per R1's DES
@@ -218,7 +222,7 @@ axis), adaptive bots, distributed load, new ML — all per D2/D3.
 |---|---|---|
 | DC1 | `c_verify` grid | {¼, 1, 4} × app service time |
 | DC2 | Abuser deposit-entry rule | deterministic expected-value k*, no learning |
-| DC3 | `d` grid | {0.1, 0.5, 2} × V |
+| DC3 | `d` grid | {0.1, 0.5, 2, 15} × V (D20) |
 | DC4 | Deadline registration profile | 40% uniform + 60% final-10% spike, σ_reg = σ_T0; uniform as labelled variant |
 | DC5 | `p_retry` grid | {0, 0.25, 0.5, 1.0} |
 | DC6 | Anchor shape criteria | knee exists; p50 ≤ 2×; p99 ≥ 10× at 8× knee |

@@ -38,11 +38,10 @@ Log events added (v1 tuple convention):
     ("stake_forfeit", t_draw, user_id, d)    # excess winning identities
     ("ineligible", t, user_id)
 
-IMPLEMENTATION CONSTANT FLAGGED FOR CHAIR ENTRY (D1 discipline): DC4
-registers the human deadline profile; abuser (identity-split)
-registration timing in A3 is implemented as uniform over W (the
-patient-abuser reading of D5) and camp bots carry their first-5%
-rule. Needs a ratifying entry at the W2 gate.
+Implementation constants ratified at the W2 gate (D20): a3 abuser
+registration timing = uniform over W (the patient-abuser reading of
+D5; camp bots carry their first-5% rule), and inactive-client stake
+refunds (the bond follows the stake, not the session).
 """
 
 from __future__ import annotations
@@ -53,8 +52,9 @@ from tatkal_sim.strategies.allocation import LotteryPool
 
 #: DC1 grid (× app service time), registered by D13.
 C_VERIFY_GRID = (0.25, 1.0, 4.0)
-#: DC3 grid (× ticket value V = 1), registered by D13.
-D_GRID = (0.1, 0.5, 2.0)
+#: DC3 grid (× ticket value V = 1), registered by D13, amended by D20
+#: (d = 15 brackets the computed forfeiture-deterrence threshold).
+D_GRID = (0.1, 0.5, 2.0, 15.0)
 
 
 def expected_pool_identities(wcfg: V2WorkloadConfig) -> int:
